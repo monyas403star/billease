@@ -1,0 +1,88 @@
+{% extends "_base.html" %}
+{% block title %}מנהל - BillEase{% endblock %}
+{% block content %}
+{% include "_nav.html" %}
+<main class="page">
+  <div class="page-head">
+    <h1>פאנל מנהל</h1>
+    <p class="muted">סטטיסטיקות מערכת ולוג סריקות</p>
+  </div>
+
+  <section class="stats">
+    <div class="stat-card">
+      <div class="stat-icon bg-blue">
+        <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4 0-9 2-9 6v2h18v-2c0-4-5-6-9-6z"/></svg>
+      </div>
+      <p class="label">משתמשים</p>
+      <p class="value" id="adm-users">--</p>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-purple">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16l4-2 4 2 4-2 4 2V8l-6-6z"/></svg>
+      </div>
+      <p class="label">סה"כ חשבונות</p>
+      <p class="value" id="adm-bills">--</p>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-green">
+        <svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19l12-12-1.4-1.4z"/></svg>
+      </div>
+      <p class="label">סריקות OCR</p>
+      <p class="value" id="adm-ocr">--</p>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-orange">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 11h-2V7h2z"/></svg>
+      </div>
+      <p class="label">סריקות שנכשלו</p>
+      <p class="value" id="adm-fails">--</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>פעילות היום</h2>
+    <p>הרשמות: <strong id="adm-signups">--</strong> | חשבונות חדשים: <strong id="adm-today-bills">--</strong></p>
+  </section>
+
+  <section class="card">
+    <h2>חלוקה לפי קטגוריה (כל המשתמשים)</h2>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>קטגוריה</th><th>מספר חשבונות</th><th>סה"כ סכום</th></tr></thead>
+        <tbody id="adm-cats"><tr><td colspan="3" class="muted">טוען...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>משתמשים</h2>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ת.ז</th><th>שם</th><th>אימייל</th><th>חשבונות</th><th>נרשם</th><th>מנהל</th>
+          </tr>
+        </thead>
+        <tbody id="adm-users-tbl"><tr><td colspan="6" class="muted">טוען...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>לוג סריקות OCR</h2>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>זמן</th><th>משתמש</th><th>תמונה</th><th>סטטוס</th><th>הערה</th>
+          </tr>
+        </thead>
+        <tbody id="adm-ocr-log"><tr><td colspan="5" class="muted">טוען...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

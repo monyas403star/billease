@@ -1,0 +1,63 @@
+{% extends "_base.html" %}
+{% block title %}הוספת חשבון - BillEase{% endblock %}
+{% block content %}
+{% include "_nav.html" %}
+<main class="page">
+  <div class="page-head">
+    <h1>הוספת חשבון חדש</h1>
+    <p class="muted">אפשר להזין ידנית או להעלות תמונה לזיהוי אוטומטי</p>
+  </div>
+
+  <section class="grid-2">
+    <div class="card">
+      <h2>סריקה מתמונה</h2>
+      <form id="scan-form" class="form">
+        <label>תמונת חשבונית</label>
+        <input id="scan-file" name="image" type="file" accept="image/*" capture="environment" required>
+        <button type="submit" class="btn">סריקה</button>
+        <p class="form-msg" id="scan-msg"></p>
+      </form>
+      <div id="preview-wrap" class="hidden">
+        <img id="preview" alt="תצוגה מקדימה">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>פרטי החשבון</h2>
+      <form id="bill-form" class="form">
+        <input type="hidden" name="image_path" id="hidden-image">
+
+        <label>ספק</label>
+        <input name="supplier" type="text" required autocomplete="off">
+
+        <label>סכום (ש"ח)</label>
+        <input name="amount" type="number" step="0.01" min="0" required>
+
+        <label>קטגוריה</label>
+        <select name="category" id="cat-select" required></select>
+        <small id="cat-hint" class="muted"></small>
+
+        <label>תאריך פירעון</label>
+        <input name="due_date" type="date" required>
+
+        <div class="check-row">
+          <label class="check">
+            <input type="checkbox" id="rec-toggle" name="is_recurring">
+            חשבון חוזר
+          </label>
+          <select name="recurrence" id="rec-period" class="hidden">
+            <option value="monthly">חודשי</option>
+            <option value="yearly">שנתי</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn primary">שמירת חשבון</button>
+        <p class="form-msg" id="save-msg"></p>
+      </form>
+    </div>
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/add_bill.js') }}"></script>
+{% endblock %}

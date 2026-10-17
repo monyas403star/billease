@@ -1,0 +1,36 @@
+{% extends "_base.html" %}
+{% block title %}פרופיל - BillEase{% endblock %}
+{% block content %}
+{% include "_nav.html" %}
+<main class="page">
+  <div class="page-head">
+    <h1>הפרופיל שלי</h1>
+    <p class="muted">עדכון פרטים. תעודת זהות לא ניתנת לשינוי.</p>
+  </div>
+
+  <section class="card narrow">
+    <form id="profile-form" class="form">
+      <label>תעודת זהות</label>
+      <input name="user_id" type="text" disabled>
+
+      <label>שם מלא</label>
+      <input name="full_name" type="text" required>
+
+      <label>אימייל</label>
+      <input name="email" type="email" required>
+
+      <label>טלפון</label>
+      <input name="phone" type="text">
+
+      <label>סיסמה חדשה (השאר ריק כדי לא לשנות)</label>
+      <input name="password" type="password" minlength="4">
+
+      <button type="submit" class="btn primary">שמירה</button>
+      <p class="form-msg" id="profile-msg"></p>
+    </form>
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+{% endblock %}

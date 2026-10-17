@@ -1,0 +1,40 @@
+{% extends "_base.html" %}
+{% block title %}החשבונות שלי - BillEase{% endblock %}
+{% block content %}
+{% include "_nav.html" %}
+<main class="page">
+  <div class="page-head">
+    <h1>החשבונות שלי</h1>
+    <p class="muted">סימון "שולם" יסיר את החשבון מהרשימה</p>
+  </div>
+
+  <section class="card">
+    <div class="card-head">
+      <div class="filters">
+        <button class="chip is-active" data-filter="all">הכל</button>
+        <button class="chip" data-filter="open">פתוחים</button>
+        <button class="chip" data-filter="soon">לתשלום בקרוב</button>
+        <button class="chip" data-filter="late">באיחור</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ספק</th>
+            <th>סכום</th>
+            <th>קטגוריה</th>
+            <th>תאריך פירעון</th>
+            <th>סטטוס</th>
+            <th>פעולה</th>
+          </tr>
+        </thead>
+        <tbody id="bills-body"><tr><td colspan="6" class="muted">טוען...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/bills.js') }}"></script>
+{% endblock %}
