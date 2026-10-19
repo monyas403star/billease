@@ -8,7 +8,20 @@ def init_db():
     conn = sqlite3.connect(DB_FILE)
     cur = conn.cursor()
 
-    # إنشاء الجداول الأساسية لـ SQLite
+    cur.execute("PRAGMA table_info(users)")
+    columns = {row[1] for row in cur.fetchall()}
+
+    if "id" in columns and "user_id" not in columns:
+        backup = sqlite3.connect(DB_FILE + ".before_user_id_fix.bak")
+        try:
+            conn.backup(backup)
+        finally:
+            backup.close()
+
+        cur.execute("ALTER TABLE users RENAME COLUMN id TO user_id")
+        conn.commit()
+        print("[bootstrap] renamed users.id to user_id")
+
     cur.executescript("""
     CREATE TABLE IF NOT EXISTS users (
         user_id TEXT PRIMARY KEY,
