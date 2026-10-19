@@ -399,37 +399,78 @@ def api_bill_add():
 def api_bill_pay(bill_id):
     if not need_login():
         return jsonify(ok=False, error="לא מחובר"), 401
-    # load the bill first so we can clone it if recurring
-    row = db.query(
-        "SELECT * FROM bills WHERE bill_id=%s AND user_id=%s",
-        (bill_id, session["user_id"]), fetch=True, one=True,
-    )
-    if not row:
-        return jsonify(ok=False, error="החשבון לא נמצא"), 404
 
-    next_bill_id = None
-    if row["is_recurring"]:
-        # build next due date
-        months = 12 if row["recurrence"] == "yearly" else 1
-        d_val = row["due_date"]
-        if isinstance(d_val, str):
-            d_val = datetime.strptime(d_val[:10], "%Y-%m-%d").date()
-        next_due = add_months(d_val, months)
-        next_bill_id = db.query(
-            "INSERT INTO bills (user_id, supplier, amount, category, due_date, "
-            "is_paid, is_recurring, recurrence, source) "
-            "VALUES (%s, %s, %s, %s, %s, 0, 1, %s, %s)",
-            (row["user_id"], row["supplier"], row["amount"], row["category"],
-             next_due.isoformat(), row["recurrence"], row["source"]),
-        )
+    conn = db.get_conn()
 
-    # remove the old bill once it's been paid
-    db.query(
-        "DELETE FROM bills WHERE bill_id=%s AND user_id=%s",
-        (bill_id, session["user_id"]),
-    )
-    return jsonify(ok=True, next_bill_id=next_bill_id)
+    try:
+        with conn:
+            conn.execute("BEGIN IMMEDIATE")
 
+            row = conn.execute(
+                "SELECT * FROM bills WHERE bill_id=? AND user_id=?",
+                (bill_id, session["user_id"]),
+            ).fetchone()
+
+            if row is None:
+                return jsonify(
+                    ok=False,
+                    error="החשבון לא נמצא",
+                ), 404
+
+            if row["is_paid"]:
+                return jsonify(
+                    ok=True,
+                    already_paid=True,
+                    next_bill_id=None,
+                )
+
+            next_bill_id = None
+
+            if row["is_recurring"]:
+                months = 12 if row["recurrence"] == "yearly" else 1
+
+                try:
+                    due = date.fromisoformat(str(row["due_date"])[:10])
+                    next_due = add_months(due, months)
+                except (ValueError, OverflowError):
+                    return jsonify(
+                        ok=False,
+                        error="תאריך החשבון אינו תקין",
+                    ), 400
+
+                cursor = conn.execute(
+                    """
+                    INSERT INTO bills (
+                        user_id, supplier, amount, category, due_date,
+                        is_paid, is_recurring, recurrence, source
+                    )
+                    VALUES (?, ?, ?, ?, ?, 0, 1, ?, ?)
+                    """,
+                    (
+                        row["user_id"],
+                        row["supplier"],
+                        row["amount"],
+                        row["category"],
+                        next_due.isoformat(),
+                        row["recurrence"],
+                        row["source"],
+                    ),
+                )
+                next_bill_id = cursor.lastrowid
+
+            conn.execute(
+                """
+                UPDATE bills
+                SET is_paid=1
+                WHERE bill_id=? AND user_id=?
+                """,
+                (bill_id, session["user_id"]),
+            )
+
+        return jsonify(ok=True, next_bill_id=next_bill_id)
+
+    finally:
+        conn.close()
 
 @app.route("/api/bills/<int:bill_id>", methods=["DELETE"])
 def api_bill_delete(bill_id):
