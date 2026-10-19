@@ -1,26 +1,47 @@
-# sends email if SMTP is set, else prints to console
-import smtplib
-from email.mime.text import MIMEText
-import config
+import json
+import os
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError, URLError
 
 
 def send_email(to_addr, subject, body):
-    if not config.SMTP_HOST:
-        # no smtp set, print so we can still test
-        print(f"[EMAIL to {to_addr}] {subject}\n{body}\n")
-        return True
+    api_key = os.environ.get("BREVO_API_KEY", "").strip()
+    sender_email = os.environ.get("MAIL_FROM", "").strip()
+
+    if not api_key or not sender_email:
+        print("[EMAIL ERROR] Missing BREVO_API_KEY or MAIL_FROM")
+        return False
+
+    payload = {
+        "sender": {
+            "name": "BillEase",
+            "email": sender_email,
+        },
+        "to": [{"email": to_addr}],
+        "subject": subject,
+        "textContent": body,
+    }
+
+    req = Request(
+        "https://api.brevo.com/v3/smtp/email",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "api-key": api_key,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+        method="POST",
+    )
+
     try:
-        msg = MIMEText(body)
-        msg["Subject"] = subject
-        msg["From"] = config.SMTP_FROM
-        msg["To"] = to_addr
-        s = smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT)
-        s.starttls()
-        if config.SMTP_USER:
-            s.login(config.SMTP_USER, config.SMTP_PASS)
-        s.sendmail(config.SMTP_FROM, [to_addr], msg.as_string())
-        s.quit()
-        return True
-    except Exception as e:
-        print(f"[EMAIL ERROR] {e}")
+        with urlopen(req, timeout=15) as response:
+            accepted = response.status == 201
+            if accepted:
+                print("[EMAIL] Brevo accepted the message")
+            return accepted
+    except HTTPError as exc:
+        print(f"[EMAIL ERROR] Brevo HTTP status: {exc.code}")
+        return False
+    except (URLError, TimeoutError, OSError):
+        print("[EMAIL ERROR] Connection failed or timed out")
         return False
