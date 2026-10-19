@@ -201,15 +201,14 @@ def api_register():
         "VALUES (%s, %s, %s, %s, %s)",
         (user_id, name, email, phone, hash_pw(pw)),
     )
-        mailer.send_email(email, "ברוך הבא ל-BillEase",
-                      f"שלום {name}, החשבון שלך ב-BillEase מוכן לשימוש!")
+    mailer.send_email(email, "ברוך הבא ל-BillEase",
+                    f"שלום {name}, החשבון שלך ב-BillEase מוכן לשימוש!")
 
     session.clear()
     session["user_id"] = user_id
     session["full_name"] = name
 
     return jsonify(ok=True, redirect=url_for("dashboard_page"))
-
 
 @app.route("/api/login", methods=["POST"])
 def api_login():
