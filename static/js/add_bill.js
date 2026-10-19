@@ -1,4 +1,5 @@
-// add bill page - with recurring + category suggestion
+// BillEase - add bill page
+
 const scanForm = document.getElementById("scan-form");
 const scanFile = document.getElementById("scan-file");
 const scanMsg = document.getElementById("scan-msg");
@@ -14,85 +15,305 @@ const hiddenImage = document.getElementById("hidden-image");
 const recToggle = document.getElementById("rec-toggle");
 const recPeriod = document.getElementById("rec-period");
 
+let scanning = false;
+let saving = false;
+let previewUrl = null;
+let suggestTimer = null;
+let suggestionVersion = 0;
+
 async function loadCategories() {
-  const res = await apiGet("/api/categories");
-  if (res.ok) {
-    catSelect.innerHTML = res.categories
-      .map(c => `<option value="${c}">${c}</option>`).join("");
+  try {
+    const res = await apiGet("/api/categories");
+
+    if (!res.ok) {
+      throw new Error("Categories could not be loaded");
+    }
+
+    const previous = catSelect.value;
+    catSelect.replaceChildren();
+
+    for (const category of res.categories) {
+      catSelect.add(new Option(category, category));
+    }
+
+    if (res.categories.includes(previous)) {
+      catSelect.value = previous;
+    } else if (res.categories.includes("אחר")) {
+      catSelect.value = "אחר";
+    }
+
+    return true;
+  } catch (error) {
+    showMsg(saveMsg, "לא ניתן לטעון קטגוריות. נסו לרענן.", false);
+    return false;
   }
 }
-loadCategories();
 
-// show/hide period select when "recurring" is toggled
+const categoriesReady = loadCategories();
+
+// Show or hide the recurrence period.
 recToggle.addEventListener("change", () => {
   recPeriod.classList.toggle("hidden", !recToggle.checked);
 });
 
-// suggest a category as the user types the supplier name
-let suggestTimer = null;
+recPeriod.classList.toggle("hidden", !recToggle.checked);
+
+// Suggest a category from the supplier name.
 billForm.supplier.addEventListener("input", () => {
   clearTimeout(suggestTimer);
+
+  const version = ++suggestionVersion;
+  const supplier = billForm.supplier.value.trim();
+
+  catHint.textContent = "";
+  if (!supplier) return;
+
   suggestTimer = setTimeout(async () => {
-    const s = billForm.supplier.value.trim();
-    if (!s) { catHint.textContent = ""; return; }
-    const res = await apiGet(`/api/suggest-category?supplier=${encodeURIComponent(s)}`);
-    if (res.ok && res.category) {
-      catSelect.value = res.category;
-      catHint.textContent = `הקטגוריה ${res.category} סומנה אוטומטית לפי שם הספק`;
-    } else {
-      catHint.textContent = "";
+    try {
+      const res = await apiGet(
+        `/api/suggest-category?supplier=${encodeURIComponent(supplier)}`
+      );
+
+      await categoriesReady;
+
+      if (version !== suggestionVersion) return;
+      if (billForm.supplier.value.trim() !== supplier) return;
+
+      if (res.ok && res.category) {
+        const exists = Array.from(catSelect.options).some(
+          option => option.value === res.category
+        );
+
+        if (exists) {
+          catSelect.value = res.category;
+          catHint.textContent =
+            `הקטגוריה ${res.category} סומנה אוטומטית לפי שם הספק`;
+        }
+      }
+    } catch (error) {
+      if (version === suggestionVersion) {
+        catHint.textContent = "";
+      }
     }
   }, 250);
 });
 
+// Preview the selected image.
 scanFile.addEventListener("change", () => {
-  const f = scanFile.files[0];
-  if (!f) return;
-  preview.src = URL.createObjectURL(f);
+  hiddenImage.value = "";
+  scanMsg.textContent = "";
+
+  if (previewUrl) {
+    URL.revokeObjectURL(previewUrl);
+    previewUrl = null;
+  }
+
+  const file = scanFile.files[0];
+
+  if (!file) {
+    preview.removeAttribute("src");
+    previewWrap.classList.add("hidden");
+    return;
+  }
+
+  previewUrl = URL.createObjectURL(file);
+  preview.src = previewUrl;
   previewWrap.classList.remove("hidden");
 });
 
-scanForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const f = scanFile.files[0];
-  if (!f) return;
-  const fd = new FormData();
-  fd.append("image", f);
-  showMsg(scanMsg, "סורק...", true);
-  const res = await fetch("/api/bills/scan", {
-    method: "POST",
-    body: fd,
-    credentials: "same-origin",
-  }).then(r => r.json());
+// Scan the image.
+scanForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (scanning || saving) return;
 
-  if (!res.ok) {
-    showMsg(scanMsg, res.error || "הסריקה נכשלה", false);
+  const file = scanFile.files[0];
+
+  if (!file) {
+    showMsg(scanMsg, "בחרו תמונה לסריקה.", false);
     return;
   }
-  if (res.image) hiddenImage.value = res.image;
-  if (res.supplier) billForm.supplier.value = res.supplier;
-  if (res.amount) billForm.amount.value = res.amount;
-  if (res.due_date) billForm.due_date.value = res.due_date;
-  if (res.category) {
-    catSelect.value = res.category;
-    catHint.textContent = `הקטגוריה ${res.category} סומנה אוטומטית`;
+
+  scanning = true;
+  scanFile.disabled = true;
+
+  const scanButton = scanForm.querySelector(
+    'button[type="submit"], button:not([type]), input[type="submit"]'
+  );
+
+  if (scanButton) scanButton.disabled = true;
+
+  hiddenImage.value = "";
+  // A new scan must not keep fields returned by a previous image.
+  billForm.supplier.value = "";
+  billForm.amount.value = "";
+  billForm.due_date.value = "";
+  catHint.textContent = "";
+  if (Array.from(catSelect.options).some(option => option.value === "אחר")) {
+    catSelect.value = "אחר";
   }
-  if (!res.ocr_available) {
-    showMsg(scanMsg, "התמונה נשמרה. הזיהוי לא זמין - אנא מלא ידנית.", true);
-  } else {
-    showMsg(scanMsg, "נסרק. בדוק את השדות ושמור.", true);
+
+  // Ignore any pending category suggestion.
+  clearTimeout(suggestTimer);
+  suggestionVersion++;
+
+  showMsg(scanMsg, "סורק... נא להמתין.", true);
+
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const response = await fetch("/api/bills/scan", {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin",
+    });
+
+    if (response.status === 401) {
+      showMsg(scanMsg, "יש להתחבר מחדש לפני הסריקה.", false);
+      return;
+    }
+
+    if (response.status === 413) {
+      showMsg(scanMsg, "התמונה גדולה מדי. בחרו תמונה קטנה יותר.", false);
+      return;
+    }
+
+    const res = await response.json();
+
+    if (!response.ok || !res.ok) {
+      showMsg(scanMsg, res.error || "הסריקה נכשלה.", false);
+      return;
+    }
+
+    if (res.image) {
+      hiddenImage.value = res.image;
+    }
+
+    if (!res.ocr_available) {
+      showMsg(
+        scanMsg,
+        "התמונה נשמרה, אך מנוע הזיהוי אינו זמין. מלאו ידנית.",
+        false
+      );
+      return;
+    }
+
+    if (res.ocr_error) {
+      showMsg(
+        scanMsg,
+        "לא ניתן לקרוא את התמונה. נסו צילום ברור יותר או מלאו ידנית.",
+        false
+      );
+      return;
+    }
+
+    if (res.supplier) {
+      billForm.supplier.value = res.supplier;
+    }
+
+    if (res.amount != null) {
+      billForm.amount.value = res.amount;
+    }
+
+    const dateValue = typeof res.due_date === "string" ? res.due_date : "";
+    billForm.due_date.value = /^\d{4}-\d{2}-\d{2}$/.test(dateValue)
+      ? dateValue
+      : "";
+
+    await categoriesReady;
+
+    if (res.category) {
+      const exists = Array.from(catSelect.options).some(
+        option => option.value === res.category
+      );
+
+      if (exists) {
+        catSelect.value = res.category;
+        catHint.textContent =
+          `הקטגוריה ${res.category} סומנה אוטומטית`;
+      }
+    }
+
+    const complete = Boolean(
+      res.supplier &&
+      res.amount != null &&
+      billForm.due_date.value
+    );
+
+    showMsg(
+      scanMsg,
+      complete
+        ? "הסריקה הסתיימה. בדקו ותקנו את הפרטים לפני השמירה."
+        : "זוהו פרטים חלקיים. השדות שלא זוהו נשארו ריקים; השלימו ובדקו לפני השמירה.",
+      complete
+    );
+  } catch (error) {
+    showMsg(
+      scanMsg,
+      "לא התקבלה תשובה תקינה מהשרת. נסו שוב.",
+      false
+    );
+  } finally {
+    scanning = false;
+    scanFile.disabled = false;
+    if (scanButton) scanButton.disabled = false;
   }
 });
 
-billForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const data = formToObj(billForm);
-  data.is_recurring = recToggle.checked;
-  const res = await apiSend("/api/bills", "POST", data);
-  if (res.ok) {
-    showMsg(saveMsg, "החשבון נשמר! עובר לרשימת החשבונות...", true);
-    setTimeout(() => { window.location.href = "/bills"; }, 800);
-  } else {
-    showMsg(saveMsg, res.error || "השמירה נכשלה", false);
+// Save the bill.
+billForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (saving) return;
+
+  if (scanning) {
+    showMsg(saveMsg, "המתינו לסיום הסריקה לפני השמירה.", false);
+    return;
+  }
+
+  if (!billForm.reportValidity()) return;
+
+  saving = true;
+
+  const saveButton = billForm.querySelector(
+    'button[type="submit"], button:not([type]), input[type="submit"]'
+  );
+
+  if (saveButton) saveButton.disabled = true;
+
+  let saved = false;
+
+  try {
+    const data = formToObj(billForm);
+    data.is_recurring = recToggle.checked;
+
+    const res = await apiSend("/api/bills", "POST", data);
+
+    if (!res.ok) {
+      showMsg(saveMsg, res.error || "השמירה נכשלה.", false);
+      return;
+    }
+
+    saved = true;
+
+    showMsg(
+      saveMsg,
+      "החשבון נשמר! עובר לרשימת החשבונות...",
+      true
+    );
+
+    setTimeout(() => {
+      window.location.href = "/bills";
+    }, 800);
+  } catch (error) {
+    showMsg(
+      saveMsg,
+      "לא התקבל אישור שמירה. בדקו ברשימת החשבונות לפני ניסיון נוסף.",
+      false
+    );
+  } finally {
+    if (!saved) {
+      saving = false;
+      if (saveButton) saveButton.disabled = false;
+    }
   }
 });
