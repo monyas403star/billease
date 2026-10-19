@@ -11,7 +11,7 @@ def init_db():
     # إنشاء الجداول الأساسية لـ SQLite
     cur.executescript("""
     CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
+        user_id TEXT PRIMARY KEY,
         full_name TEXT,
         email TEXT,
         phone TEXT,
