@@ -558,6 +558,7 @@ def api_bill_scan():
         supplier=parsed["supplier"],
         category=guessed,
         ocr_available=ocr.OCR_OK,
+        ocr_error=parsed.get("error"),
     )
 
 
