@@ -232,21 +232,42 @@ def api_login():
 
 @app.route("/api/recover/request", methods=["POST"])
 def api_recover_request():
-    # step 1 of password recovery - send OTP
     data = request.get_json() or {}
     user_id = (data.get("user_id") or "").strip()
 
-    row = db.query("SELECT user_id, email FROM users WHERE user_id=%s",
-                   (user_id,), fetch=True, one=True)
+    row = db.query(
+        "SELECT user_id, email FROM users WHERE user_id=%s",
+        (user_id,),
+        fetch=True,
+        one=True,
+    )
+
     if not row:
         return jsonify(ok=False, error="המשתמש לא נמצא"), 404
 
     code = gen_otp()
-    OTP_STORE[user_id] = (code, datetime.utcnow() + timedelta(minutes=10))
-    mailer.send_email(row["email"], "איפוס סיסמה ל-BillEase",
-                      f"קוד החד-פעמי שלך: {code}\nתוקפו 10 דקות.")
-    return jsonify(ok=True, msg=f"הקוד נשלח לכתובת {row['email']}")
+    OTP_STORE[user_id] = (
+        code,
+        datetime.utcnow() + timedelta(minutes=10),
+    )
 
+    sent = mailer.send_email(
+        row["email"],
+        "איפוס סיסמה ל-BillEase",
+        f"קוד החד-פעמי שלך: {code}\nתוקפו 10 דקות.",
+    )
+
+    if not sent:
+        OTP_STORE.pop(user_id, None)
+        return jsonify(
+            ok=False,
+            error="שליחת הקוד נכשלה. נסו שוב מאוחר יותר.",
+        ), 502
+
+    return jsonify(
+        ok=True,
+        msg="הקוד הועבר לשליחה. בדקו גם בתיקיית הספאם.",
+    )
 
 @app.route("/api/recover/reset", methods=["POST"])
 def api_recover_reset():
