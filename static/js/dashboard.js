@@ -16,12 +16,11 @@ async function loadDashboard() {
     const d = daysUntil(b.due_date);
     return d >= 0 && d <= 7;
   }).length;
-  const paidTotal = paid.reduce((s, b) => s + b.amount, 0);
 
   document.getElementById("stat-open").textContent = open.length;
   document.getElementById("stat-total").textContent = fmtMoney(total);
   document.getElementById("stat-soon").textContent = soon;
-  document.getElementById("stat-paid").textContent = fmtMoney(paidTotal);
+  document.getElementById("stat-paid").textContent = paid.length;
 
   const upcoming = open
     .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
