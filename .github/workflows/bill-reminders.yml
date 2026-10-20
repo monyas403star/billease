@@ -1,0 +1,68 @@
+name: BillEase email reminders
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: billease-reminders
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check notifications on the web service
+        env:
+          BILLEASE_URL: ${{ secrets.BILLEASE_URL }}
+          REMINDER_JOB_TOKEN: ${{ secrets.REMINDER_JOB_TOKEN }}
+        shell: python
+        run: |
+          import json, os, time
+          from urllib.request import Request, urlopen
+          from urllib.error import HTTPError, URLError
+
+          base = os.environ.get('BILLEASE_URL', '').strip().rstrip('/')
+          token = os.environ.get('REMINDER_JOB_TOKEN', '').strip()
+
+          if not base.startswith('https://') or not token:
+              raise SystemExit('Set BILLEASE_URL and REMINDER_JOB_TOKEN repository secrets first.')
+
+          for attempt in range(3):
+              try:
+                  request = Request(
+                      base + '/api/reminders/run',
+                      data=b'{}',
+                      method='POST',
+                      headers={
+                          'Authorization': 'Bearer ' + token,
+                          'Content-Type': 'application/json'
+                      }
+                  )
+                  with urlopen(request, timeout=90) as response:
+                      result = json.load(response)
+
+                  if not result.get('ok'):
+                      raise SystemExit('Notification check returned an error.')
+
+                  print('Notification check:', {
+                      key: result.get(key) for key in
+                      ('queued', 'sent', 'failed', 'attempted', 'busy')
+                  })
+                  break
+
+              except HTTPError as exc:
+                  if exc.code < 500:
+                      raise SystemExit('Notification endpoint rejected request. HTTP ' + str(exc.code))
+                  if attempt == 2:
+                      raise SystemExit('Web service unavailable after retries.')
+
+              except (URLError, TimeoutError, OSError):
+                  if attempt == 2:
+                      raise SystemExit('Web service could not be reached after retries.')
+
+              time.sleep(20)
