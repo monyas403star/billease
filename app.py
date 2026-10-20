@@ -639,6 +639,8 @@ def api_bill_scan():
         category=guessed,
         ocr_available=ocr.OCR_OK,
         ocr_error=parsed.get("error"),
+        ocr_notice=parsed.get("notice"),
+        document_type=parsed.get("document_type", "unknown"),
     )
 
 
