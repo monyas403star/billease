@@ -1,17 +1,20 @@
 # BillEase - Flask backend
 import os
 import hmac
-import hashlib
-import random
-import string
-from datetime import datetime, timedelta, date
+import secrets
+import re
+import sqlite3
+from urllib.parse import urlsplit
+from datetime import datetime, date
 from collections import defaultdict
 
 from flask import (
     Flask, request, jsonify, session, render_template,
     send_file, redirect, url_for, send_from_directory
 )
-from werkzeug.utils import secure_filename
+from werkzeug.exceptions import BadRequest
+from PIL import Image, ImageOps, UnidentifiedImageError
+import billease_security as security
 
 import config
 import bootstrap
@@ -26,6 +29,7 @@ import scheduler
 bootstrap.DB_FILE = db.database_path()
 bootstrap.init_db()
 scheduler.init_schema()
+security.init_schema()
 
 
 # build the app, pointing to ../templates and ../static
@@ -37,7 +41,14 @@ app = Flask(
     template_folder=os.path.join(ROOT, "templates"),
     static_folder=os.path.join(ROOT, "static"),
 )
-app.secret_key = config.SECRET_KEY
+app.secret_key = security.session_secret()
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=os.environ.get("RENDER", "").lower() == "true"
+        or os.environ.get("SESSION_COOKIE_SECURE") == "1",
+    MAX_CONTENT_LENGTH=12 * 1024 * 1024,
+)
 # keep Hebrew as-is in JSON responses
 app.config["JSON_AS_ASCII"] = False
 app.json.ensure_ascii = False
@@ -46,25 +57,69 @@ app.json.ensure_ascii = False
 UPLOAD_FULL = os.environ.get("BILLEASE_UPLOAD_DIR") or os.path.join(HERE, config.UPLOAD_DIR)
 os.makedirs(UPLOAD_FULL, exist_ok=True)
 
-# simple in-memory OTP store: user_id -> (code, expires_at)
-OTP_STORE = {}
+@app.before_request
+def check_write_origin():
+    if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        origin = request.headers.get("Origin")
+        if origin:
+            parsed = urlsplit(origin)
+            if parsed.netloc != request.host or parsed.scheme not in ("http", "https"):
+                return jsonify(ok=False, error="הבקשה אינה מאושרת"), 403
+            if app.config["SESSION_COOKIE_SECURE"] and parsed.scheme != "https":
+                return jsonify(ok=False, error="נדרש חיבור מאובטח"), 403
+
+
+@app.after_request
+def security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["Referrer-Policy"] = "same-origin"
+    if request.path.startswith(("/api/", "/uploads/")):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.errorhandler(400)
+def invalid_request(error):
+    message = getattr(error, "description", "")
+    if not any("א" <= c <= "ת" for c in message):
+        message = "הבקשה אינה תקינה"
+    return jsonify(ok=False, error=message), 400
+
+
+@app.errorhandler(413)
+def upload_too_large(error):
+    return jsonify(ok=False, error="גודל הבקשה המרבי הוא 12 MB"), 413
 
 
 # ------------------ helpers ------------------
 
 def hash_pw(pw):
-    # sha256 hash for password storage
-    return hashlib.sha256(pw.encode("utf-8")).hexdigest()
+    return security.hash_password(pw)
 
 
 def need_login():
-    # check if a user is logged in
-    return "user_id" in session
+    user_id = session.get("user_id")
+    if not isinstance(user_id, str) or not user_id:
+        return False
+    row = db.query("SELECT user_id FROM users WHERE user_id=?", (user_id,), fetch=True, one=True)
+    if not row or session.get("auth_version") != security.version(user_id):
+        session.clear()
+        return False
+    return True
 
 
 def gen_otp():
-    # 6 digit one-time code
-    return "".join(random.choices(string.digits, k=6))
+    return f"{secrets.randbelow(1000000):06d}"
+
+
+def image_owned(fname):
+    if not isinstance(fname, str) or not fname or fname != os.path.basename(fname) or "\\" in fname:
+        return False
+    row = db.query("SELECT 1 AS found FROM bills WHERE user_id=? AND image_path=? "
+                   "UNION ALL SELECT 1 AS found FROM ocr_log WHERE user_id=? AND image_path=? LIMIT 1",
+                   (session["user_id"], fname, session["user_id"], fname), fetch=True, one=True)
+    return bool(row)
 
 
 def current_user():
@@ -174,6 +229,12 @@ def logout():
 # expose upload files
 @app.route("/uploads/<path:fname>")
 def uploaded_file(fname):
+    if not need_login():
+        return jsonify(ok=False, error="לא מחובר"), 401
+    if os.path.splitext(fname)[1].lower() not in {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff"}:
+        return jsonify(ok=False, error="הקובץ לא נמצא"), 404
+    if not image_owned(fname) and not is_admin():
+        return jsonify(ok=False, error="הקובץ לא נמצא"), 404
     return send_from_directory(UPLOAD_FULL, fname)
 
 
@@ -181,124 +242,84 @@ def uploaded_file(fname):
 
 @app.route("/api/register", methods=["POST"])
 def api_register():
-    data = request.get_json() or {}
-    user_id = (data.get("user_id") or "").strip()
-    name = (data.get("full_name") or "").strip()
-    email = (data.get("email") or "").strip()
-    phone = (data.get("phone") or "").strip()
-    pw = data.get("password") or ""
-
-    if not user_id or not name or not email or not pw:
-        return jsonify(ok=False, error="חסרים שדות חובה"), 400
-    if len(pw) < 4:
-        return jsonify(ok=False, error="הסיסמה קצרה מדי"), 400
-
-    # check if id already used
-    found = db.query("SELECT user_id FROM users WHERE user_id=%s",
-                     (user_id,), fetch=True, one=True)
-    if found:
+    data = security.json_object(request)
+    user_id = security.text(data, "user_id", 64, required=True)
+    name = security.text(data, "full_name", 100, required=True)
+    email = security.email(security.text(data, "email", 254, required=True))
+    phone = security.text(data, "phone", 30)
+    pw = security.password(data, "password", new=True)
+    if not security.rate_allowed("register", request.remote_addr or "unknown", 20, 3600):
+        return jsonify(ok=False, error="יותר מדי ניסיונות. נסו שוב מאוחר יותר"), 429
+    try:
+        db.query("INSERT INTO users (user_id,full_name,email,phone,password_hash) VALUES (?,?,?,?,?)",
+                 (user_id, name, email, phone, hash_pw(pw)))
+    except sqlite3.IntegrityError:
         return jsonify(ok=False, error="מספר הזהות כבר רשום במערכת"), 400
-
-    db.query(
-        "INSERT INTO users (user_id, full_name, email, phone, password_hash) "
-        "VALUES (%s, %s, %s, %s, %s)",
-        (user_id, name, email, phone, hash_pw(pw)),
-    )
-    mailer.send_email(email, "ברוך הבא ל-BillEase",
-                    f"שלום {name}, החשבון שלך ב-BillEase מוכן לשימוש!")
-
+    try:
+        mailer.send_email(email, "ברוך הבא ל-BillEase", f"שלום {name}, החשבון שלך מוכן לשימוש!")
+    except Exception:
+        app.logger.warning("Welcome email failed; account was created")
     session.clear()
-    session["user_id"] = user_id
-    session["full_name"] = name
-
+    session.update(user_id=user_id, full_name=name, auth_version=security.version(user_id))
     return jsonify(ok=True, redirect=url_for("dashboard_page"))
+
 
 @app.route("/api/login", methods=["POST"])
 def api_login():
-    data = request.get_json() or {}
-    user_id = (data.get("user_id") or "").strip()
-    pw = data.get("password") or ""
-
-    row = db.query(
-        "SELECT user_id, full_name, password_hash FROM users WHERE user_id=%s",
-        (user_id,), fetch=True, one=True,
-    )
-    if not row:
-        return jsonify(ok=False, error="המשתמש לא נמצא"), 401
-    if row["password_hash"] != hash_pw(pw):
-        return jsonify(ok=False, error="סיסמה שגויה"), 401
-
-    session["user_id"] = row["user_id"]
-    session["full_name"] = row["full_name"]
+    data = security.json_object(request)
+    user_id = security.text(data, "user_id", 64, required=True)
+    pw = security.password(data, "password")
+    if not security.rate_allowed("login", user_id, 20):
+        return jsonify(ok=False, error="יותר מדי ניסיונות. נסו שוב בעוד 15 דקות"), 429
+    row = db.query("SELECT user_id,full_name,password_hash FROM users WHERE user_id=?",
+                   (user_id,), fetch=True, one=True)
+    if not row or not security.password_matches(row["password_hash"], pw):
+        return jsonify(ok=False, error="פרטי ההתחברות אינם נכונים"), 401
+    if security.legacy_hash(row["password_hash"]):
+        db.query("UPDATE users SET password_hash=? WHERE user_id=? AND password_hash=?",
+                 (hash_pw(pw), user_id, row["password_hash"]))
+    session.clear()
+    session.update(user_id=user_id, full_name=row["full_name"], auth_version=security.version(user_id))
     scheduler.wake()
     return jsonify(ok=True, name=row["full_name"])
 
 
 @app.route("/api/recover/request", methods=["POST"])
 def api_recover_request():
-    data = request.get_json() or {}
-    user_id = (data.get("user_id") or "").strip()
-
-    row = db.query(
-        "SELECT user_id, email FROM users WHERE user_id=%s",
-        (user_id,),
-        fetch=True,
-        one=True,
-    )
-
+    data = security.json_object(request)
+    user_id = security.text(data, "user_id", 64, required=True)
+    if not security.rate_allowed("recover", user_id, 3):
+        return jsonify(ok=False, error="יותר מדי בקשות לקוד. נסו שוב בעוד 15 דקות"), 429
+    generic = "אם החשבון קיים, הקוד הועבר לשליחה. בדקו גם בתיקיית הספאם."
+    row = db.query("SELECT user_id,email FROM users WHERE user_id=?", (user_id,), fetch=True, one=True)
     if not row:
-        return jsonify(ok=False, error="המשתמש לא נמצא"), 404
-
+        return jsonify(ok=True, msg=generic)
     code = gen_otp()
-    OTP_STORE[user_id] = (
-        code,
-        datetime.utcnow() + timedelta(minutes=10),
-    )
-
-    sent = mailer.send_email(
-        row["email"],
-        "איפוס סיסמה ל-BillEase",
-        f"קוד החד-פעמי שלך: {code}\nתוקפו 10 דקות.",
-    )
-
+    digest = security.save_reset(user_id, code, app.secret_key)
+    try:
+        sent = mailer.send_email(row["email"], "איפוס סיסמה ל-BillEase",
+                                 f"קוד החד-פעמי שלך: {code}\nתוקפו 10 דקות.")
+    except Exception:
+        sent = False
     if not sent:
-        OTP_STORE.pop(user_id, None)
-        return jsonify(
-            ok=False,
-            error="שליחת הקוד נכשלה. נסו שוב מאוחר יותר.",
-        ), 502
+        db.query("DELETE FROM password_reset_codes WHERE user_id=? AND code_hash=?", (user_id, digest))
+        return jsonify(ok=False, error="שליחת הקוד נכשלה. נסו שוב מאוחר יותר"), 502
+    return jsonify(ok=True, msg=generic)
 
-    return jsonify(
-        ok=True,
-        msg="הקוד הועבר לשליחה. בדקו גם בתיקיית הספאם.",
-    )
 
 @app.route("/api/recover/reset", methods=["POST"])
 def api_recover_reset():
-    # step 2 of password recovery - verify OTP and set new password
-    data = request.get_json() or {}
-    user_id = (data.get("user_id") or "").strip()
-    otp_code = (data.get("otp") or "").strip()
-    new_pw = data.get("new_password") or ""
-
-    if not user_id or not otp_code or not new_pw:
-        return jsonify(ok=False, error="חסרים שדות חובה"), 400
-    if len(new_pw) < 4:
-        return jsonify(ok=False, error="הסיסמה קצרה מדי"), 400
-
-    saved = OTP_STORE.get(user_id)
-    if not saved:
-        return jsonify(ok=False, error="לא הוגשה בקשת איפוס"), 400
-    code, expires = saved
-    if datetime.utcnow() > expires:
-        OTP_STORE.pop(user_id, None)
-        return jsonify(ok=False, error="קוד החד-פעמי פג תוקף"), 400
-    if code != otp_code:
-        return jsonify(ok=False, error="קוד החד-פעמי שגוי"), 400
-
-    db.query("UPDATE users SET password_hash=%s WHERE user_id=%s",
-             (hash_pw(new_pw), user_id))
-    OTP_STORE.pop(user_id, None)
+    data = security.json_object(request)
+    user_id = security.text(data, "user_id", 64, required=True)
+    code = security.text(data, "otp", 6, required=True)
+    new_pw = security.password(data, "new_password", new=True)
+    if not re.fullmatch(r"[0-9]{6}", code):
+        return jsonify(ok=False, error="נדרש קוד בן שש ספרות"), 400
+    if not security.rate_allowed("reset", user_id, 10):
+        return jsonify(ok=False, error="יותר מדי ניסיונות. נסו שוב בעוד 15 דקות"), 429
+    if not security.apply_reset(user_id, code, hash_pw(new_pw), app.secret_key):
+        return jsonify(ok=False, error="הקוד שגוי, פג תוקף או נחסם. בקשו קוד חדש"), 400
+    session.clear()
     return jsonify(ok=True)
 
 
@@ -315,28 +336,29 @@ def api_profile():
 def api_profile_update():
     if not need_login():
         return jsonify(ok=False, error="לא מחובר"), 401
-    data = request.get_json() or {}
-    name = (data.get("full_name") or "").strip()
-    email = (data.get("email") or "").strip()
-    phone = (data.get("phone") or "").strip()
-    new_pw = data.get("password") or ""
-
-    if not name or not email:
-        return jsonify(ok=False, error="שם ואימייל נדרשים"), 400
-
-    if new_pw:
-        if len(new_pw) < 4:
-            return jsonify(ok=False, error="הסיسמה קצרה מדי"), 400
-        db.query(
-            "UPDATE users SET full_name=%s, email=%s, phone=%s, password_hash=%s "
-            "WHERE user_id=%s",
-            (name, email, phone, hash_pw(new_pw), session["user_id"]),
-        )
-    else:
-        db.query(
-            "UPDATE users SET full_name=%s, email=%s, phone=%s WHERE user_id=%s",
-            (name, email, phone, session["user_id"]),
-        )
+    data = security.json_object(request)
+    name = security.text(data, "full_name", 100, required=True)
+    email = security.email(security.text(data, "email", 254, required=True))
+    phone = security.text(data, "phone", 30)
+    new_pw = security.password(data, "password", new=True, optional=True)
+    user_id = session["user_id"]
+    previous = current_user()
+    conn = db.get_conn()
+    try:
+        with conn:
+            conn.execute("BEGIN IMMEDIATE")
+            if new_pw:
+                conn.execute("UPDATE users SET full_name=?,email=?,phone=?,password_hash=? WHERE user_id=?",
+                             (name, email, phone, hash_pw(new_pw), user_id))
+            else:
+                conn.execute("UPDATE users SET full_name=?,email=?,phone=? WHERE user_id=?", (name,email,phone,user_id))
+            # Updating recovery email or password invalidates other sessions/codes.
+            if new_pw or previous["email"] != email:
+                security.bump_version(conn, user_id)
+                conn.execute("DELETE FROM password_reset_codes WHERE user_id=?", (user_id,))
+    finally:
+        conn.close()
+    session["auth_version"] = security.version(user_id)
     session["full_name"] = name
     return jsonify(ok=True)
 
@@ -364,22 +386,22 @@ def api_bills_list():
 def api_bill_add():
     if not need_login():
         return jsonify(ok=False, error="לא מחובר"), 401
-    data = request.get_json() or {}
-    supplier = (data.get("supplier") or "").strip()
-    amount = data.get("amount")
-    category = (data.get("category") or "").strip()
-    due_date = (data.get("due_date") or "").strip()
-    is_recurring = 1 if data.get("is_recurring") else 0
-    recurrence = (data.get("recurrence") or "monthly").strip() if is_recurring else None
-    image_path = data.get("image_path") or None
+    data = security.json_object(request)
+    supplier = security.text(data, "supplier", 150, required=True)
+    amount = security.money(data.get("amount"))
+    category = security.text(data, "category", 80)
+    due_date = security.due_date(security.text(data, "due_date", 10, required=True))
+    recurring = data.get("is_recurring", False)
+    if not isinstance(recurring, (bool, int)) or recurring not in (False, True, 0, 1):
+        raise BadRequest("ערך החזרתיות אינו תקין")
+    is_recurring = int(bool(recurring))
+    recurrence = (security.text(data, "recurrence", 10) or "monthly") if is_recurring else None
+    if recurrence is not None and recurrence not in ("monthly", "yearly"):
+        raise BadRequest("תקופת החזרתיות אינה תקינה")
+    image_path = security.text(data, "image_path", 255) or None
+    if image_path and not image_owned(image_path):
+        raise BadRequest("התמונה אינה שייכת לחשבון שלך")
     source = "ocr" if image_path else "manual"
-
-    if not supplier or not amount or not due_date:
-        return jsonify(ok=False, error="חסרים שדות חובה"), 400
-    try:
-        amount = float(amount)
-    except (TypeError, ValueError):
-        return jsonify(ok=False, error="סכום לא תקין"), 400
 
     # if user didn't pick a category, try to guess from supplier
     if not category or category == "אחר":
@@ -492,6 +514,10 @@ def api_bill_pay(bill_id):
 def api_bill_delete(bill_id):
     if not need_login():
         return jsonify(ok=False, error="לא מחובר"), 401
+    owned = db.query("SELECT bill_id FROM bills WHERE bill_id=? AND user_id=?",
+                     (bill_id, session["user_id"]), fetch=True, one=True)
+    if not owned:
+        return jsonify(ok=False, error="החשבון לא נמצא"), 404
     db.query(
         "DELETE FROM bills WHERE bill_id=%s AND user_id=%s",
         (bill_id, session["user_id"]),
@@ -509,6 +535,8 @@ def api_bills_by_month():
         month = int(request.args.get("month"))
     except (TypeError, ValueError):
         return jsonify(ok=False, error="שנה או חודש לא תקינים"), 400
+    if not 1 <= month <= 12 or not 1 <= year <= 9999:
+        raise BadRequest("שנה או חודש אינם תקינים")
     rows = db.query(
         "SELECT bill_id, supplier, amount, category, due_date, is_paid "
         "FROM bills WHERE user_id=%s ORDER BY due_date ASC",
@@ -518,7 +546,10 @@ def api_bills_by_month():
     for r in rows:
         d_val = r["due_date"]
         if isinstance(d_val, str):
-            d_val = datetime.strptime(d_val[:10], "%Y-%m-%d").date()
+            try:
+                d_val = datetime.strptime(d_val[:10], "%Y-%m-%d").date()
+            except ValueError:
+                continue
         if d_val.year == year and d_val.month == month:
             r["due_date"] = str(r["due_date"])
             r["amount"] = float(r["amount"])
@@ -549,13 +580,34 @@ def api_bill_scan():
     if not f.filename:
         return jsonify(ok=False, error="שם קובץ ריק"), 400
 
-    safe = secure_filename(f.filename)
-    stamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    save_name = f"{session['user_id']}{stamp}{safe}"
+    save_name = secrets.token_hex(20) + ".png"
     full_path = os.path.join(UPLOAD_FULL, save_name)
-    f.save(full_path)
-
-    parsed = ocr.scan_bill(full_path)
+    try:
+        with Image.open(f.stream) as original:
+            if original.format not in {"PNG", "JPEG", "WEBP"} or original.width * original.height > 20000000:
+                raise ValueError("Unsupported image")
+            original.load()
+            normalized = ImageOps.exif_transpose(original).convert("RGB")
+            normalized.save(full_path, format="PNG")
+    except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
+        if os.path.isfile(full_path):
+            os.remove(full_path)
+        return jsonify(ok=False, error="נדרשת תמונת JPG, PNG או WEBP תקינה, עד 20 מיליון פיקסלים"), 400
+    try:
+        parsed = ocr.scan_bill(full_path)
+    except Exception:
+        parsed = dict(amount=None, due_date=None, supplier=None, error="OCR failed")
+    # OCR output is only a suggestion and must pass the same save-time rules.
+    if parsed.get("due_date"):
+        try:
+            parsed["due_date"] = security.due_date(parsed["due_date"])
+        except BadRequest:
+            parsed["due_date"] = None
+    if parsed.get("amount") is not None:
+        try:
+            parsed["amount"] = security.money(parsed["amount"])
+        except BadRequest:
+            parsed["amount"] = None
     parsed_ok = bool(parsed["amount"] or parsed["due_date"] or parsed["supplier"])
     # write a row to the ocr log so admins/audit can review
     db.query(
@@ -634,7 +686,10 @@ def api_reports_summary():
     for r in rows:
         d_val = r["due_date"]
         if isinstance(d_val, str):
-            d_val = datetime.strptime(d_val[:10], "%Y-%m-%d").date()
+            try:
+                d_val = datetime.strptime(d_val[:10], "%Y-%m-%d").date()
+            except ValueError:
+                continue
         if d_val.year == year:
             m = d_val.month
             by_month[m] += float(r["amount"])
@@ -662,7 +717,10 @@ def api_reports_compare():
         for r in rows:
             d_val = r["due_date"]
             if isinstance(d_val, str):
-                d_val = datetime.strptime(d_val[:10], "%Y-%m-%d").date()
+                try:
+                    d_val = datetime.strptime(d_val[:10], "%Y-%m-%d").date()
+                except ValueError:
+                    continue
             if d_val.year == y:
                 out[d_val.month - 1] += float(r["amount"])
         return [round(x, 2) for x in out]
@@ -720,18 +778,13 @@ def api_budgets_save():
     # upsert a single category budget
     if not need_login():
         return jsonify(ok=False, error="לא מחובר"), 401
-    data = request.get_json() or {}
-    category = (data.get("category") or "").strip()
-    try:
-        limit = float(data.get("monthly_limit"))
-    except (TypeError, ValueError):
-        return jsonify(ok=False, error="סכום לא תקין"), 400
-    if not category:
-        return jsonify(ok=False, error="חסרה קטגוריה"), 400
+    data = security.json_object(request)
+    category = security.text(data, "category", 80, required=True)
+    limit = security.money(data.get("monthly_limit"), allow_zero=True)
     db.query(
         "INSERT INTO budgets (user_id, category, monthly_limit) "
         "VALUES (%s, %s, %s) "
-        "ON DUPLICATE KEY UPDATE monthly_limit=VALUES(monthly_limit)",
+        "ON CONFLICT(user_id, category) DO UPDATE SET monthly_limit=excluded.monthly_limit",
         (session["user_id"], category, limit),
     )
     return jsonify(ok=True)
@@ -871,7 +924,8 @@ def api_admin_ocr_log():
 
 @app.errorhandler(500)
 def internal_error(e):
-    return f"<h3>حدث خطأ داخلي:</h3><pre>{str(e)}</pre>", 500
+    app.logger.error("Internal server error", exc_info=True)
+    return jsonify(ok=False, error="אירעה שגיאה פנימית. נסו שוב מאוחר יותר"), 500
 
 # start the background reminder thread (won't double-start)
 scheduler.start()
