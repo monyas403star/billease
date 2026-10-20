@@ -1,5 +1,6 @@
 # BillEase - Flask backend
 import os
+import hmac
 import hashlib
 import random
 import string
@@ -22,7 +23,9 @@ import categorize
 import scheduler
 
 # auto-create DB + tables + demo data on first start (idempotent)
+bootstrap.DB_FILE = db.database_path()
 bootstrap.init_db()
+scheduler.init_schema()
 
 
 # build the app, pointing to ../templates and ../static
@@ -227,6 +230,7 @@ def api_login():
 
     session["user_id"] = row["user_id"]
     session["full_name"] = row["full_name"]
+    scheduler.wake()
     return jsonify(ok=True, name=row["full_name"])
 
 
@@ -467,7 +471,19 @@ def api_bill_pay(bill_id):
                 (bill_id, session["user_id"]),
             )
 
-        return jsonify(ok=True, next_bill_id=next_bill_id)
+            event_id = scheduler.queue_payment(conn, bill_id, session["user_id"])
+
+        # Payment is committed before contacting the email provider.
+        email_accepted = False
+        try:
+            if event_id is not None:
+                result = scheduler.deliver_pending(event_id=event_id, max_seconds=20)
+                email_accepted = result["sent"] > 0
+        except Exception:
+            app.logger.exception("[notifications] payment saved; email remains queued")
+        scheduler.wake()
+        return jsonify(ok=True, next_bill_id=next_bill_id,
+                       email_accepted=email_accepted)
 
     finally:
         conn.close()
@@ -758,22 +774,16 @@ def api_reports_pdf():
 
 @app.route("/api/reminders/run", methods=["POST"])
 def api_reminders_run():
-    # checks unpaid bills due in N days and emails reminders
-    target = date.today() + timedelta(days=config.REMINDER_DAYS)
-    rows = db.query(
-        "SELECT b.bill_id, b.supplier, b.amount, b.due_date, u.email, u.full_name "
-        "FROM bills b JOIN users u ON b.user_id = u.user_id "
-        "WHERE b.is_paid=0 AND b.due_date=%s",
-        (target.isoformat(),), fetch=True,
-    )
-    sent = 0
-    for r in rows:
-        body = (f"שלום {r['full_name']},\n\n"
-                f"תזכורת: החשבון מ-{r['supplier']} "
-                f"בסך {r['amount']} ש\"ח לתשלום עד {r['due_date']}.")
-        if mailer.send_email(r["email"], "תזכורת תשלום מ-BillEase", body):
-            sent += 1
-    return jsonify(ok=True, sent=sent, total=len(rows))
+    expected = os.environ.get("REMINDER_JOB_TOKEN", "").strip()
+    supplied = request.headers.get("Authorization", "")
+    token_ok = bool(expected) and hmac.compare_digest(
+        supplied.encode("utf-8"), ("Bearer " + expected).encode("utf-8"))
+    if not token_ok:
+        err = _need_admin()
+        if err:
+            return err
+    result = scheduler.run_notifications()
+    return jsonify(ok=True, **result)
 
 
 # ------------------ admin (אפיון 11.2) ------------------
