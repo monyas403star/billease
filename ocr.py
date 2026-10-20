@@ -24,17 +24,6 @@ TOTAL_LABELS = ['סה"כ לתשלום', 'סך הכל לתשלום', 'סכום ל
                 'المبلغ المستحق', 'المجموع للدفع', 'اجمالي المبلغ']
 DEBT_LABELS = ['יתרת חוב', 'ללא החשבון הנוכחי', 'previous balance', 'arrears',
                'رصيد سابق', 'متأخرات']
-RECEIPT_TOTAL_LABELS = ['סה"כ תקבולים', 'סך התקבולים', 'תקבולים', 'receipt total', 'total received']
-
-
-def _is_receipt(text):
-    header = '\n'.join(normalize_text(text).splitlines()[:40])
-    return bool(re.search(
-        r'תאריך\s*הקבלה|^\s*קבלה(?:\s*[:#-]?\s*\d|\s*$)|'
-        r'^\s*receipt(?:\s+(?:no|number|total)\b|\s*[:#]?\s*\d|\s*$)|'
-        r'tax invoice\s*/\s*receipt', header, re.I | re.M))
-
-
 PERIOD_LABELS = ['תאריך הדפסה', 'תאריך הפקה', 'תקופת החשבון', 'תאריך קריאה',
                  'issue date', 'billing period', 'تاريخ الاصدار', 'فترة الاستهلاك']
 
@@ -138,7 +127,7 @@ def _amounts(text):
     # Replace date spans with spaces so label positions stay unchanged.
     text = re.sub(r'\b\d{1,4}\s*[./-]\s*\d{1,2}\s*[./-]\s*\d{1,4}\b',
                   lambda m: ' ' * len(m.group()), text)
-    positive = _labels(text, (RECEIPT_TOTAL_LABELS if _is_receipt(text) else TOTAL_LABELS))
+    positive = _labels(text, TOTAL_LABELS)
     negative = _labels(text, DEBT_LABELS)
     pattern = r'(?<![\d.,])(?:\d{1,3}(?:,\d{3})+\.\d{2}|\d+[.,]\d{2})(?![\d.,])'
     found = []
@@ -149,12 +138,6 @@ def _amounts(text):
         if value <= 0:
             continue
         pos = _near(match.start(), match.end(), positive)
-        if _is_receipt(text):
-            left = text.rfind('\n', 0, match.start()) + 1
-            right = text.find('\n', match.end())
-            line = text[left:right if right >= 0 else len(text)]
-            if _labels(line, TOTAL_LABELS) and not _labels(line, RECEIPT_TOTAL_LABELS):
-                pos = 0
         neg = _near(match.start(), match.end(), negative)
         score = pos if pos > neg + .04 else pos - 1.5 * neg
         found.append((value, score, pos))
@@ -182,37 +165,20 @@ def find_amount(text):
 
 
 def find_date(text):
-    if _is_receipt(text):
-        return None
     return _choose([text], _dates)
 
 
 def find_supplier(text):
-    # Compare header text across OCR views rather than returning a page number.
-    views = normalize_text(text).split('\n\n')
-    lines = [line.strip() for view in views for line in view.splitlines()[:18] if line.strip()]
-    for line in lines:
-        legal = re.search(r"([א-ת][א-ת \"״'-]{3,70}בע\s*[\"״']?\s*מ)\b", line)
-        if legal and not re.search(r'לכבוד|מען|כתובת|מספר', legal.group(1)):
-            return legal.group(1).strip()[:50]
-    for line in lines:
-        if re.fullmatch(r"(?:מי|مياه|חברת|شركة)\s+[א-תا-ي \"״'-]{2,40}", line):
-            return line[:50]
-    header = '\n'.join(lines)
-    websites = re.findall(r'(?:https?://|www\.)\s*(?:www\.)?([a-z0-9][a-z0-9-]{2,})\.[a-z]{2,}(?:\.[a-z]{2,})?', header, re.I)
-    for name in websites:
-        if name.lower() not in {'gmail', 'outlook', 'hotmail', 'yahoo', 'icloud', 'google', 'facebook'}:
-            return name[:50]
-    for line in lines:
-        if re.search(r"בע[\"״']?מ|\b(?:ltd|limited|inc|llc)\b", line, re.I):
-            if len(_compact(line)) >= 7 and not re.search(r'מען|לכבוד|טלפון|כתובת|address|phone', line, re.I):
-                return line[:50]
-    # A weak or conflicting header should be reviewed, not filled with gibberish.
+    for line in text.splitlines():
+        clean = line.strip()
+        if len(clean) > 2 and any(c.isalpha() for c in clean):
+            return clean[:50]
     return None
 
-def _read_view(view, languages, timeout, offset_x, psm=11):
+
+def _read_view(view, languages, timeout, offset_x):
     data = pytesseract.image_to_data(
-        view, lang=languages, config=f'--psm {psm}', timeout=timeout,
+        view, lang=languages, config='--psm 11', timeout=timeout,
         output_type=pytesseract.Output.DICT,
     )
     groups = {}
@@ -235,8 +201,7 @@ def _read_view(view, languages, timeout, offset_x, psm=11):
 
 
 def _spatial_choose(records, kind, width, height):
-    receipt = _is_receipt('\n'.join(r['text'] for r in records))
-    phrases = DATE_LABELS if kind == 'date' else (RECEIPT_TOTAL_LABELS if receipt else TOTAL_LABELS)
+    phrases = DATE_LABELS if kind == 'date' else TOTAL_LABELS
     extractor = _dates if kind == 'date' else _amounts
     positives = [(r, max((x[2] for x in _labels(r['text'], phrases)), default=0)) for r in records]
     positives = [(r, quality) for r, quality in positives if quality >= .84]
@@ -276,7 +241,7 @@ def _spatial_choose(records, kind, width, height):
 
 
 def scan_bill(image_path):
-    result = dict(amount=None, due_date=None, supplier=None, text='', error=None, notice=None, document_type='unknown')
+    result = dict(amount=None, due_date=None, supplier=None, text='', error=None)
     if not OCR_OK:
         result['error'] = 'OCR engine is not installed'
         logger.error('[OCR] engine is not installed')
@@ -296,36 +261,28 @@ def scan_bill(image_path):
         # Overlapping columns handle bills with side panels and tables.
         views = [image, image.crop((0, 0, round(image.width * .6), image.height)),
                  image.crop((round(image.width * .4), 0, image.width, image.height))]
-        jobs = [(views[0], 'heb+eng', 0, 6), (views[0], 'heb+ara+eng', 0, 11),
-                (views[1], 'heb+ara+eng', 0, 11),
-                (views[2], 'heb+ara+eng', round(image.width * .4), 11)]
-        for view, languages, offset, psm in jobs:
+        jobs = [(views[0], 'heb+ara+eng', 0), (views[1], 'heb+ara+eng', 0),
+                (views[2], 'heb+ara+eng', round(image.width * .4)), (views[0], 'eng', 0)]
+        for view, languages, offset in jobs:
             remaining = deadline - time.monotonic()
             if remaining < 1:
                 break
             try:
-                lines = _read_view(view, languages, min(15, remaining), offset, psm=psm)
+                lines = _read_view(view, languages, min(35, remaining), offset)
                 records.extend(lines)
                 text = '\n'.join(line['text'] for line in lines)
                 if text.strip():
                     texts.append(text)
             except (RuntimeError, pytesseract.TesseractError) as exc:
                 failures += 1
-                logger.warning('[OCR] a pass failed: %s', type(exc).__name__)
+                logger.warning('[OCR] a pass failed: %s', str(exc))
         result['text'] = '\n\n'.join(texts)
         if not texts:
             result['error'] = 'Image scanning failed' if failures else 'No readable text found'
             return result
-        result['supplier'] = find_supplier(result['text'])
+        result['supplier'] = find_supplier(texts[0])
         result['amount'] = _spatial_choose(records, 'amount', image.width, image.height)
-        receipt = _is_receipt(result['text'])
-        result['document_type'] = 'receipt' if receipt else 'invoice'
-        result['due_date'] = None if receipt else _spatial_choose(records, 'date', image.width, image.height)
-        if receipt:
-            result['notice'] = ('זוהתה קבלה. הסכום הוא סך המסמך ולא בהכרח חוב פתוח. '
-                                'אין מועד תשלום יחיד מאומת; בחרו תאריך ידנית ובדקו אם כבר שולם.')
-        elif longest < 1000:
-            result['notice'] = 'התמונה קטנה. מומלץ צילום מקורי חד יותר; בדקו את הסכום והתאריך לפני השמירה.'
+        result['due_date'] = _spatial_choose(records, 'date', image.width, image.height)
         # Do not put invoice text, identities, or account numbers in server logs.
         logger.info('[OCR] fields: amount=%s due_date=%s',
                     result['amount'] is not None, result['due_date'] is not None)
