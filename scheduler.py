@@ -26,15 +26,13 @@ def local_today():
 
 
 def init_schema():
-    conn = db.get_conn()
-    try:
-        with conn:
-            conn.execute('''
+    # Expand the existing CHECK constraint without losing event IDs or retry state.
+    create_sql = """
                 CREATE TABLE IF NOT EXISTS bill_email_events (
                     event_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     user_id TEXT NOT NULL,
                     bill_id INTEGER NOT NULL,
-                    kind TEXT NOT NULL CHECK(kind IN ('paid', 'seven_days', 'overdue')),
+                    kind TEXT NOT NULL CHECK(kind IN ('paid', 'seven_days', 'overdue', 'deleted')),
                     due_date TEXT NOT NULL,
                     recipient TEXT NOT NULL,
                     subject TEXT NOT NULL,
@@ -50,21 +48,42 @@ def init_schema():
                     sent_at REAL,
                     UNIQUE(user_id, bill_id, kind, due_date)
                 )
-            ''')
-            conn.execute('''CREATE INDEX IF NOT EXISTS idx_bill_email_pending
-                            ON bill_email_events(status, next_attempt, lease_until)''')
+    """
+    conn = db.get_conn()
+    try:
+        with conn:
+            conn.execute('BEGIN IMMEDIATE')
+            existing = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='bill_email_events'").fetchone()
+            if existing and "'deleted'" not in existing['sql']:
+                conn.execute(create_sql.replace('IF NOT EXISTS bill_email_events', '_bill_email_events_v2'))
+                conn.execute('INSERT INTO _bill_email_events_v2 SELECT * FROM bill_email_events')
+                conn.execute('DROP TABLE bill_email_events')
+                conn.execute('ALTER TABLE _bill_email_events_v2 RENAME TO bill_email_events')
+            else:
+                conn.execute(create_sql)
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_bill_email_pending ON bill_email_events(status,next_attempt,lease_until)")
     finally:
         conn.close()
 
 
 def _insert_event(conn, row, kind, today):
-    due = date.fromisoformat(str(row['due_date'])[:10])
+    due_raw = str(row['due_date'] or '')[:10]
+    try:
+        due = date.fromisoformat(due_raw)
+    except ValueError:
+        if kind != 'deleted':
+            raise
+        due = None
     full_name = row['full_name'] or ''
     supplier = row['supplier'] or 'הספק'
     amount = f"{float(row['amount']):.2f}"
-    due_text = due.strftime('%d/%m/%Y')
+    due_text = due.strftime('%d/%m/%Y') if due else (due_raw or 'לא צוין')
     details = f'ספק: {supplier}\nסכום: {amount} ש״ח\nמועד לתשלום: {due_text}'
-    if kind == 'paid':
+    if kind == 'deleted':
+        subject = 'BillEase — אישור מחיקת חשבון'
+        body = (f'שלום {full_name},\n\nהחשבון הבא נמחק מהחשבון שלך במערכת BillEase:\n'
+                f'{details}\n\nהמחיקה במערכת אינה תשלום או ביטול חוב אצל הספק.')
+    elif kind == 'paid':
         subject = 'BillEase — החשבון סומן כשולם'
         body = (f'שלום {full_name},\n\nהחשבון הבא סומן כשולם במערכת BillEase:\n'
                 f'{details}\n\nזהו אישור רישום במערכת, ולא אישור סליקה מהספק.')
@@ -82,11 +101,11 @@ def _insert_event(conn, row, kind, today):
              idempotency_key, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(user_id, bill_id, kind, due_date) DO NOTHING
-    ''', (row['user_id'], row['bill_id'], kind, due.isoformat(), row['email'] or '',
+    ''', (row['user_id'], row['bill_id'], kind, due.isoformat() if due else due_raw, row['email'] or '',
           subject, body, str(uuid.uuid4()), time.time()))
     event = conn.execute('''SELECT event_id FROM bill_email_events
                             WHERE user_id=? AND bill_id=? AND kind=? AND due_date=?''',
-                         (row['user_id'], row['bill_id'], kind, due.isoformat())).fetchone()
+                         (row['user_id'], row['bill_id'], kind, due.isoformat() if due else due_raw)).fetchone()
     return event['event_id']
 
 
@@ -105,7 +124,22 @@ def queue_payment(conn, bill_id, user_id):
     return _insert_event(conn, row, 'paid', local_today())
 
 
+def queue_deletion(conn, bill_id, user_id):
+    """Capture recipient and bill details before deletion, in its transaction."""
+    row = conn.execute("""SELECT b.*,u.email,u.full_name FROM bills b
+                          JOIN users u ON u.user_id=b.user_id
+                          WHERE b.bill_id=? AND b.user_id=?""", (bill_id,user_id)).fetchone()
+    if row is None:
+        return None
+    conn.execute("""UPDATE bill_email_events SET status='cancelled'
+                    WHERE bill_id=? AND user_id=? AND kind!='deleted' AND status='pending'""",
+                 (bill_id,user_id))
+    return _insert_event(conn,row,'deleted',local_today())
+
+
 def _eligible(conn, event, today):
+    if event['kind'] == 'deleted':
+        return conn.execute('SELECT 1 FROM users WHERE user_id=?', (event['user_id'],)).fetchone() is not None
     row = conn.execute('''SELECT is_paid, due_date FROM bills
                           WHERE bill_id=? AND user_id=?''',
                        (event['bill_id'], event['user_id'])).fetchone()
@@ -168,7 +202,7 @@ def _claim(event_id=None, today=None):
             if event_id is not None:
                 sql += ' AND event_id=?'
                 args.append(event_id)
-            sql += " ORDER BY CASE WHEN kind='paid' THEN 0 ELSE 1 END, event_id LIMIT 25"
+            sql += " ORDER BY CASE WHEN kind IN ('paid','deleted') THEN 0 ELSE 1 END, event_id LIMIT 25"
             for event in conn.execute(sql, args).fetchall():
                 if not _eligible(conn, event, today):
                     conn.execute("UPDATE bill_email_events SET status='cancelled' WHERE event_id=?",

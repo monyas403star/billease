@@ -514,15 +514,27 @@ def api_bill_pay(bill_id):
 def api_bill_delete(bill_id):
     if not need_login():
         return jsonify(ok=False, error="לא מחובר"), 401
-    owned = db.query("SELECT bill_id FROM bills WHERE bill_id=? AND user_id=?",
-                     (bill_id, session["user_id"]), fetch=True, one=True)
-    if not owned:
-        return jsonify(ok=False, error="החשבון לא נמצא"), 404
-    db.query(
-        "DELETE FROM bills WHERE bill_id=%s AND user_id=%s",
-        (bill_id, session["user_id"]),
-    )
-    return jsonify(ok=True)
+    conn = db.get_conn()
+    try:
+        with conn:
+            conn.execute("BEGIN IMMEDIATE")
+            owned = conn.execute("SELECT bill_id FROM bills WHERE bill_id=? AND user_id=?",
+                                 (bill_id, session["user_id"])).fetchone()
+            if owned is None:
+                return jsonify(ok=False, error="החשבון לא נמצא"), 404
+            event_id = scheduler.queue_deletion(conn, bill_id, session["user_id"])
+            conn.execute("DELETE FROM bills WHERE bill_id=? AND user_id=?", (bill_id, session["user_id"]))
+        email_accepted = False
+        try:
+            if event_id is not None:
+                result = scheduler.deliver_pending(event_id=event_id,max_seconds=20)
+                email_accepted = result["sent"] > 0
+        except Exception:
+            app.logger.exception("[notifications] bill deleted; email remains queued")
+        scheduler.wake()
+        return jsonify(ok=True,email_accepted=email_accepted)
+    finally:
+        conn.close()
 
 
 @app.route("/api/bills/by-month", methods=["GET"])
