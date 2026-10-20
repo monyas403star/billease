@@ -240,12 +240,13 @@ scanForm.addEventListener("submit", async (event) => {
       billForm.due_date.value
     );
 
+    const scanNotice = typeof res.ocr_notice === "string" ? res.ocr_notice : "";
     showMsg(
       scanMsg,
-      complete
+      scanNotice || (complete
         ? "הסריקה הסתיימה. בדקו ותקנו את הפרטים לפני השמירה."
-        : "זוהו פרטים חלקיים. השדות שלא זוהו נשארו ריקים; השלימו ובדקו לפני השמירה.",
-      complete
+        : "זוהו פרטים חלקיים. השדות שלא זוהו נשארו ריקים; השלימו ובדקו לפני השמירה."),
+      complete && !scanNotice
     );
   } catch (error) {
     showMsg(
