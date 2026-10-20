@@ -43,7 +43,7 @@ app.config["JSON_AS_ASCII"] = False
 app.json.ensure_ascii = False
 
 # folder for uploaded images
-UPLOAD_FULL = os.path.join(HERE, config.UPLOAD_DIR)
+UPLOAD_FULL = os.environ.get("BILLEASE_UPLOAD_DIR") or os.path.join(HERE, config.UPLOAD_DIR)
 os.makedirs(UPLOAD_FULL, exist_ok=True)
 
 # simple in-memory OTP store: user_id -> (code, expires_at)
