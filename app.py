@@ -626,10 +626,14 @@ def api_bill_scan():
         "INSERT INTO ocr_log (user_id, image_path, parsed_ok, note) "
         "VALUES (%s, %s, %s, %s)",
         (session["user_id"], save_name, 1 if parsed_ok else 0,
-         "ok" if ocr.OCR_OK else "tesseract not installed"),
+         "openai: error" if parsed.get("error") else "openai: extracted; review required"),
     )
     # also try to guess a category from the supplier we read
-    guessed = categorize.guess_category(parsed["supplier"]) if parsed["supplier"] else None
+    guessed = parsed.get("category")
+    if guessed:
+        allowed = db.query("SELECT category_name FROM categories", fetch=True)
+        if guessed not in {row["category_name"] for row in allowed}:
+            guessed = None
     return jsonify(
         ok=True,
         image=save_name,
