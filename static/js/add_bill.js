@@ -201,7 +201,7 @@ scanForm.addEventListener("submit", async (event) => {
     if (res.ocr_error) {
       showMsg(
         scanMsg,
-        "לא ניתן לקרוא את התמונה. נסו צילום ברור יותר או מלאו ידנית.",
+        res.ocr_error || "לא ניתן לקרוא את התמונה. נסו שוב או מלאו ידנית.",
         false
       );
       return;
