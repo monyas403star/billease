@@ -34,37 +34,41 @@
         <label>{{ t("ספק") }}</label>
         <input name="supplier" type="text" required autocomplete="off">
 
-        <label>{{ t("סכום (ש\"ח)") }}</label>
+        <label id="amount-label">{{ t("סכום (ש\"ח)") }}</label>
         <input name="amount" type="number" step="0.01" min="0" required>
 
         <label>{{ t("קטגוריה") }}</label>
         <select name="category" id="cat-select" required></select>
         <small id="cat-hint" class="muted"></small>
 
-        <label>{{ t("תאריך פירעון") }}</label>
+        <label id="due-label">{{ t("תאריך פירעון") }}</label>
         <input name="due_date" type="date" required>
 
-        <fieldset>
-          <legend>{{ t('Payment schedule') }}</legend>
-          <label><input type="checkbox" id="installment-toggle"> {{ t('Pay in installments') }}</label>
-          <div id="installment-fields" class="hidden">
-            <label for="payment-count">{{ t('Number of monthly payments') }}</label>
-            <input id="payment-count" type="number" min="1" max="120" value="1">
-            <button type="button" id="generate-payments" class="btn">{{ t('Build monthly schedule') }}</button>
-            <p class="muted">{{ t('Use the amount of one payment and the first payment date above. Review each payment before saving.') }}</p>
-            <div id="payment-rows"></div>
+        <label for="payment-mode">{{ t('Payment type') }}</label>
+        <select name="payment_mode" id="payment-mode">
+          <option value="single">{{ t('Single bill') }}</option>
+          <option value="recurring">{{ t('Ongoing recurring bill') }}</option>
+          <option value="installments">{{ t('Fixed installment plan') }}</option>
+        </select>
+        <input type="checkbox" id="rec-toggle" name="is_recurring" hidden>
+        <select name="recurrence" id="rec-period" class="hidden" aria-label="{{ t('Recurrence period') }}">
+          <option value="monthly">{{ t('חודשי') }}</option>
+          <option value="yearly">{{ t('שנתי') }}</option>
+        </select>
+        <p id="plan-hint" class="muted" role="status"></p>
+        <section id="installment-panel" class="hidden">
+          <h3>{{ t('Review each installment') }}</h3>
+          <div class="plan-controls">
+            <label>{{ t('Total number of installments') }}<input id="installment-count" type="number" min="1" max="60" step="1" value="2" required disabled></label>
+            <label>{{ t('First remaining installment number') }}<input id="installment-start" type="number" min="1" max="60" step="1" value="1" required disabled></label>
           </div>
-        </fieldset>
-        <div class="check-row">
-          <label class="check">
-            <input type="checkbox" id="rec-toggle" name="is_recurring">
-            {{ t("חשבון חוזר") }}
-          </label>
-          <select name="recurrence" id="rec-period" class="hidden">
-            <option value="monthly">{{ t("חודשי") }}</option>
-            <option value="yearly">{{ t("שנתי") }}</option>
-          </select>
-        </div>
+          <label>{{ t('Total of remaining installments (optional check)') }}<input id="installment-total" type="number" min="0.01" step="0.01" disabled></label>
+          <button type="button" id="generate-installments" class="btn">{{ t('Generate monthly dates and amounts') }}</button>
+          <p class="muted">{{ t('Uses the first amount and due date above. Review all rows before saving.') }}</p>
+          <div class="plan-row plan-heading"><span aria-label="{{ t('Payment') }}">#</span><span>{{ t('סכום') }}</span><span>{{ t('תאריך פירעון') }}</span></div>
+          <div id="installment-rows"></div>
+          <p id="installment-summary" role="status"></p>
+        </section>
 
         <button type="submit" class="btn primary">{{ t("שמירת חשבון") }}</button>
         <p class="form-msg" id="save-msg"></p>
@@ -74,5 +78,6 @@
 </main>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/add_bill.js', v='payments2') }}"></script>
+<script src="{{ url_for('static', filename='js/payment_plan.js', v='accountplans1') }}"></script>
+<script src="{{ url_for('static', filename='js/add_bill.js', v='accountplans1') }}"></script>
 {% endblock %}

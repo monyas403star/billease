@@ -10,6 +10,7 @@
 
   <section class="card narrow">
     <form id="profile-form" class="form">
+      {% include "_language_buttons.html" %}
       <label>{{ t("תעודת זהות") }}</label>
       <input name="user_id" type="text" disabled>
 
@@ -32,5 +33,5 @@
 </main>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/profile.js', v='payments2') }}"></script>
+<script src="{{ url_for('static', filename='js/profile.js', v='accountplans1') }}"></script>
 {% endblock %}

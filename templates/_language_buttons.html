@@ -1,0 +1,12 @@
+<fieldset class="account-language">
+  <legend><span data-i18n="Account language">{{ t('Account language') }}</span></legend>
+  <p class="muted"><span data-i18n="Your website and emails will use this language. You can change it in your profile.">{{ t('Your website and emails will use this language. You can change it in your profile.') }}</span></p>
+  <div class="language-buttons">
+    {% for code, label in languages.items() %}
+    <label class="language-button">
+      <input type="radio" name="preferred_language" value="{{ code }}" {% if code == locale %}checked{% endif %} required>
+      <span lang="{{ code }}" dir="auto">{{ label }}</span>
+    </label>
+    {% endfor %}
+  </div>
+</fieldset>
