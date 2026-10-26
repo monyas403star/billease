@@ -4,3 +4,4 @@ fpdf2==2.7.9
 Pillow==10.4.0
 gunicorn
 pytesseract==0.3.13
+uharfbuzz==0.57.0

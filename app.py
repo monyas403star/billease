@@ -23,6 +23,7 @@ import ocr
 import mailer
 import pdfgen
 import categorize
+import i18n
 import scheduler
 
 # auto-create DB + tables + demo data on first start (idempotent)
@@ -49,6 +50,8 @@ app.config.update(
         or os.environ.get("SESSION_COOKIE_SECURE") == "1",
     MAX_CONTENT_LENGTH=12 * 1024 * 1024,
 )
+i18n.setup(app)
+
 # keep Hebrew as-is in JSON responses
 app.config["JSON_AS_ASCII"] = False
 app.json.ensure_ascii = False
@@ -762,12 +765,12 @@ def api_reports_csv():
     out = StringIO()
     out.write("\ufeff")  # BOM so Excel reads Hebrew right
     w = csv.writer(out)
-    w.writerow(["ספק", "סכום", "קטגוריה", "תאריך פירעון", "שולם"])
+    w.writerow([i18n.translate(label) for label in ["ספק", "סכום", "קטגוריה", "תאריך פירעון", "שולם"]])
     for r in rows:
         w.writerow([
             r["supplier"], f"{float(r['amount']):.2f}",
-            r["category"] or "", str(r["due_date"]),
-            "כן" if r["is_paid"] else "לא",
+            i18n.translate(r["category"] or ""), str(r["due_date"]),
+            i18n.translate("כן" if r["is_paid"] else "לא"),
         ])
     data = out.getvalue().encode("utf-8")
     return send_file(

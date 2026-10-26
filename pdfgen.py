@@ -1,93 +1,60 @@
-# builds a simple PDF report from bills (Hebrew, RTL)
+"""Unicode report with language-aware labels and Arabic/Hebrew shaping."""
 import os
-from fpdf import FPDF
 from io import BytesIO
-
-try:
-    from bidi.algorithm import get_display
-    BIDI_OK = True
-except Exception:
-    BIDI_OK = False
-
-
-def rtl(text):
-    # flip Hebrew so it reads right-to-left in the PDF
-    if not BIDI_OK:
-        return str(text)
-    return get_display(str(text))
+from fpdf import FPDF
+import i18n
 
 
 def _find_font():
-    # try a few common Hebrew-capable TTF locations
-    candidates_reg = [
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "C:/Windows/Fonts/arial.ttf",
-        "C:/Windows/Fonts/David.ttf",
-        "C:/Windows/Fonts/segoeui.ttf",
-    ]
-    candidates_bold = [
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "C:/Windows/Fonts/arialbd.ttf",
-        "C:/Windows/Fonts/Davidbd.ttf",
-        "C:/Windows/Fonts/segoeuib.ttf",
-    ]
-    reg = next((p for p in candidates_reg if os.path.exists(p)), None)
-    bold = next((p for p in candidates_bold if os.path.exists(p)), None)
-    return reg, bold
+    regular = ['/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 'C:/Windows/Fonts/arial.ttf']
+    bold = ['/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 'C:/Windows/Fonts/arialbd.ttf']
+    return next((p for p in regular if os.path.isfile(p)), None), next((p for p in bold if os.path.isfile(p)), None)
 
 
 def build_report_pdf(user_name, bills, totals_by_cat):
+    t = i18n.translate
+    align = 'L' if i18n.language() == 'en' else 'R'
     pdf = FPDF()
+    regular, bold = _find_font()
+    if not regular:
+        raise RuntimeError('A Unicode font is required for report export')
+    pdf.add_font('Body', '', regular)
+    pdf.add_font('Body', 'B', bold or regular)
+    # HarfBuzz performs Arabic shaping and mixed-direction text layout.
+    pdf.set_text_shaping(True)
     pdf.add_page()
-
-    reg, bold = _find_font()
-    if reg:
-        pdf.add_font("Body", "", reg, uni=True)
-        if bold:
-            pdf.add_font("Body", "B", bold, uni=True)
-        else:
-            pdf.add_font("Body", "B", reg, uni=True)
-        font_main = "Body"
-    else:
-        font_main = "Helvetica"
-
-    # title
-    pdf.set_font(font_main, "B", 18)
-    pdf.cell(0, 12, rtl("BillEase - דוח שנתי"), ln=1, align="C")
-    pdf.set_font(font_main, "", 11)
-    pdf.cell(0, 8, rtl(f"שם המשתמש: {user_name}"), ln=1, align="R")
+    pdf.set_font('Body', 'B', 18)
+    pdf.cell(0, 12, t('BillEase - דוח שנתי'), new_x='LMARGIN', new_y='NEXT', align='C')
+    pdf.set_font('Body', '', 11)
+    pdf.cell(0, 8, t('שם המשתמש: {name}', name=user_name), new_x='LMARGIN', new_y='NEXT', align=align)
     pdf.ln(4)
-
-    # totals by category
-    pdf.set_font(font_main, "B", 13)
-    pdf.cell(0, 9, rtl("סיכום לפי קטגוריה"), ln=1, align="R")
-    pdf.set_font(font_main, "", 11)
-    for cat, total in totals_by_cat.items():
-        line = f'{cat}: {total:.2f} ש"ח'
-        pdf.cell(0, 7, rtl(line), ln=1, align="R")
+    pdf.set_font('Body', 'B', 13)
+    pdf.cell(0, 9, t('סיכום לפי קטגוריה'), new_x='LMARGIN', new_y='NEXT', align=align)
+    pdf.set_font('Body', '', 11)
+    currency = t('ש"ח')
+    for category, total in totals_by_cat.items():
+        pdf.cell(0, 7, f'{t(category)}: {total:.2f} {currency}',
+                 new_x='LMARGIN', new_y='NEXT', align=align)
     pdf.ln(4)
-
-    # bills table
-    pdf.set_font(font_main, "B", 13)
-    pdf.cell(0, 9, rtl("רשימת חשבונות"), ln=1, align="R")
-
-    # header row
-    pdf.set_font(font_main, "B", 10)
-    pdf.cell(40, 8, rtl("ספק"), border=1, align="C")
-    pdf.cell(25, 8, rtl("סכום"), border=1, align="C")
-    pdf.cell(35, 8, rtl("קטגוריה"), border=1, align="C")
-    pdf.cell(35, 8, rtl("תאריך פירעון"), border=1, align="C")
-    pdf.cell(20, 8, rtl("שולם"), border=1, align="C", ln=1)
-
-    pdf.set_font(font_main, "", 10)
-    for b in bills:
-        pdf.cell(40, 7, rtl(str(b.get("supplier", ""))[:20]), border=1, align="R")
-        pdf.cell(25, 7, f"{float(b['amount']):.2f}", border=1, align="R")
-        pdf.cell(35, 7, rtl(str(b.get("category", ""))[:18]), border=1, align="R")
-        pdf.cell(35, 7, str(b["due_date"]), border=1, align="C")
-        pdf.cell(20, 7, rtl("כן" if b["is_paid"] else "לא"), border=1, align="C", ln=1)
-
-    out = BytesIO()
-    pdf.output(out)
-    out.seek(0)
-    return out
+    pdf.set_font('Body', 'B', 13)
+    pdf.cell(0, 9, t('רשימת חשבונות'), new_x='LMARGIN', new_y='NEXT', align=align)
+    columns = [('ספק', 55), ('סכום', 30), ('קטגוריה', 40), ('תאריך פירעון', 40), ('שולם', 25)]
+    if i18n.language() != 'en':
+        columns.reverse()
+    pdf.set_font('Body', 'B', 9)
+    for index, (label, width) in enumerate(columns):
+        pdf.cell(width, 8, t(label), border=1, align='C',
+                 new_x='LMARGIN' if index == 4 else 'RIGHT', new_y='NEXT' if index == 4 else 'TOP')
+    pdf.set_font('Body', '', 9)
+    for bill in bills:
+        values = [str(bill.get('supplier', ''))[:26], f"{float(bill['amount']):.2f}",
+                  t(bill.get('category') or ''), str(bill['due_date']), t('כן' if bill['is_paid'] else 'לא')]
+        if i18n.language() != 'en':
+            values.reverse()
+        for index, ((label, width), value) in enumerate(zip(columns, values)):
+            pdf.cell(width, 8, value, border=1, align='C',
+                     new_x='LMARGIN' if index == 4 else 'RIGHT', new_y='NEXT' if index == 4 else 'TOP')
+    result = BytesIO()
+    pdf.output(result)
+    result.seek(0)
+    return result
