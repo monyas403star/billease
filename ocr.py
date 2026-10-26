@@ -57,6 +57,13 @@ For installment bills amount and due_date refer to the FIRST payment, never the 
 For other bills amount means the current bill total payable, not previous debt, tax or account number.
 Return amount as a decimal STRING with dot separator, no currency or thousands separators.
 Currency is ISO currency code, only if supported by the visible document.
+Explicit ₪, ש"ח, ש״ח, שח, NIS, ILS, שקל, שקלים, شيكل or شيقل mean ILS.
+Look in table column headers, totals, payment slips and footnotes for currency labels.
+Do not require the literal letters ILS when a shekel symbol or label is visible.
+Include the visible currency label in amount evidence when it supports that amount.
+Return null currency if it is not visible; never infer it from a supplier or address.
+Carefully read the current payable amount (including agorot/cents); output e.g. 1234.50
+for a printed 1,234.50. For installments, read the per-payment amount instead of the total.
 Due date means the EXPLICIT payment deadline, not issue/print date, billing period,
 cheque dates or weighted payment date. Return YYYY-MM-DD. If absent/ambiguous use null.
 Do not infer the year from today's date. A receipt alone does not imply a payment deadline.
@@ -124,6 +131,45 @@ def _supported(data, name):
     return value.strip() or None
 
 
+def _is_ils(value, amount_field=None):
+    """Accept explicit shekel notation; never infer currency from supplier or country."""
+    aliases = {'ILS', 'NIS', '₪', 'ש״ח', 'ש"ח', 'שח', 'שקל', 'שקלים', 'שקל חדש', 'שקלים חדשים',
+               'شيكل', 'شيقل', 'شيكل إسرائيلي', 'شيكل اسرائيلي',
+               'israeli shekel', 'israeli shekels', 'new israeli shekel'}
+    def normalized(text):
+        return re.sub(r'[\s"\'״׳.]+', ' ', text).strip().casefold()
+    supported = {normalized(alias) for alias in aliases}
+    if isinstance(value, str) and normalized(value) in supported:
+        return True
+    # A different explicitly identified currency must not be overridden by another
+    # figure in a mixed-currency document.
+    if value is not None and (not isinstance(value, str) or value.strip()):
+        return False
+    evidence = amount_field.get('evidence', '') if isinstance(amount_field, dict) else ''
+    if not isinstance(evidence, str):
+        return False
+    return bool(re.search(r'₪|ש["״\']?ח|\b(?:ILS|NIS)\b|شيكل|شيقل', evidence, re.I))
+
+
+def _amount_value(raw):
+    if not isinstance(raw, str):
+        return None
+    # Only standard unambiguous grouping is normalized. Decimal commas and mixed
+    # currency strings stay unset rather than changing their meaning.
+    raw = raw.strip()
+    if re.fullmatch(r'\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?', raw):
+        raw = raw.replace(',', '')
+    if not re.fullmatch(r'\d{1,9}(?:\.\d{1,2})?', raw):
+        return None
+    try:
+        value = Decimal(raw)
+        if value.is_finite() and 0 < value <= Decimal('999999999.99'):
+            return float(value)
+    except InvalidOperation:
+        pass
+    return None
+
+
 def _validated(data):
     result = dict(supplier=None, amount=None, due_date=None, category=None,
                   document_type=data.get('document_type', 'unknown'), text='', error=None,
@@ -136,15 +182,10 @@ def _validated(data):
     if supplier and len(supplier) <= 120:
         result['supplier'] = supplier
     amount = _supported(data, 'amount')
-    if amount and re.fullmatch(r'\d{1,9}(?:\.\d{1,2})?', amount):
-        try:
-            value = Decimal(amount)
-            if value.is_finite() and 0 < value <= Decimal('999999999.99'):
-                result['amount'] = float(value)
-        except InvalidOperation:
-            pass
+    result['amount'] = _amount_value(amount)
     currency = data.get('currency')
-    if currency != 'ILS':
+    ils = _is_ils(currency, data.get('amount'))
+    if not ils:
         result['amount'] = None
         result['notice'] = 'לא זוהה סכום בשקלים בוודאות. בדקו מטבע ומלאו את הסכום ידנית.'
     due = _supported(data, 'due_date')
@@ -159,9 +200,9 @@ def _validated(data):
         result['notice'] = 'זוהתה קבלה. בדקו אם כבר שולם; תאריך פירעון יופיע רק אם מצוין במפורש.'
     result['installments'] = []
     rows = data.get('installments', [])
-    if rows and isinstance(rows, list) and len(rows) <= 120 and currency == 'ILS' and result['document_type'] == 'invoice':
+    if rows and isinstance(rows, list) and len(rows) <= 120 and ils and result['document_type'] == 'invoice':
         try:
-            clean = payments.validate([dict(amount=_supported(row, 'amount'), due_date=_supported(row, 'due_date')) for row in rows])
+            clean = payments.validate([dict(amount=_amount_value(_supported(row, 'amount')), due_date=_supported(row, 'due_date')) for row in rows])
             result['installments'] = clean
             result['amount'] = clean[0]['amount']
             result['due_date'] = clean[0]['due_date']
