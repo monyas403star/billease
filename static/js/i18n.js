@@ -48,16 +48,18 @@ document.addEventListener('invalid', event => {
 }, true);
 
 document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('language-form');
-  const select = document.getElementById('language-select');
-  if (form && select) {
-    form.querySelector('button').hidden = true;
-    select.addEventListener('change', () => form.requestSubmit());
-    form.addEventListener('submit', event => {
-      if (uiDirty && !window.confirm(t('Unsaved changes may be lost when switching languages.'))) {
-        event.preventDefault(); select.value = uiSettings.locale;
-      }
-    });
+  const register = document.getElementById('register-form');
+  if(register && uiSettings.catalogs) {
+    for(const button of register.querySelectorAll('input[name="preferred_language"]')) {
+      button.addEventListener('change', () => {
+        if(!button.checked || !uiSettings.catalogs[button.value])return;
+        uiSettings.locale=button.value;uiSettings.messages=uiSettings.catalogs[button.value];
+        document.documentElement.lang=button.value;
+        document.documentElement.dir=button.value==='en'?'ltr':'rtl';
+        for(const node of document.querySelectorAll('[data-i18n]'))node.textContent=t(node.dataset.i18n);
+        document.title=t('הרשמה - BillEase');
+      });
+    }
   }
   const file = document.getElementById('scan-file');
   const fileName = document.getElementById('scan-file-name');

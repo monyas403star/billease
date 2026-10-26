@@ -55,3 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
     toggle.addEventListener("click", () => nav.classList.toggle("open"));
   }
 });
+
+function installmentBadge(bill) {
+  const number=Number(bill.installment_number),count=Number(bill.installment_count);
+  if(!Number.isInteger(number)||!Number.isInteger(count)||number<1||number>count) return '';
+  return `<span class="badge open">${escapeHtml(t('Installment {number} of {count}', {number,count}))}</span>`;
+}

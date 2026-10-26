@@ -116,7 +116,7 @@ async function openDrill(year, month) {
   }
   drillBody.innerHTML = res.bills.map(b => `
     <tr>
-      <td>${escapeHtml(b.supplier || "")}</td>
+      <td>${escapeHtml(b.supplier || "")} ${installmentBadge(b)}</td>
       <td>${fmtMoney(b.amount)}</td>
       <td>${escapeHtml(categoryLabel(b.category || ""))}</td>
       <td>${escapeHtml(fmtDate(b.due_date))}</td>

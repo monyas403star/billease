@@ -32,7 +32,7 @@ function render() {
       : "";
     return `
       <tr>
-        <td>${escapeHtml(b.supplier || "")} ${recIcon}${imgIcon}</td>
+        <td>${escapeHtml(b.supplier || "")} ${installmentBadge(b)} ${recIcon}${imgIcon}</td>
         <td>${fmtMoney(b.amount)}</td>
         <td>${escapeHtml(categoryLabel(b.category || ""))}</td>
         <td>${escapeHtml(fmtDate(b.due_date))}</td>

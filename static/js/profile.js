@@ -9,6 +9,7 @@ async function loadProfile() {
   form.full_name.value = res.user.full_name || "";
   form.email.value = res.user.email || "";
   form.phone.value = res.user.phone || "";
+  if (form.preferred_language) form.preferred_language.value = res.user.preferred_language || "he";
 }
 
 form.addEventListener("submit", async (e) => {
@@ -19,6 +20,7 @@ form.addEventListener("submit", async (e) => {
   if (res.ok) {
     showMsg(msg, t("נשמר!"), true);
     form.password.value = "";
+    if (res.language && res.language !== uiSettings.locale) window.location.reload();
   } else {
     showMsg(msg, res.error || t("השמירה נכשלה"), false);
   }

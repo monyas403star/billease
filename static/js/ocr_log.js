@@ -12,7 +12,7 @@ async function load() {
         <td>${b.image_path
           ? `<a href="/uploads/${b.image_path}" target="_blank"><img class="thumb" src="/uploads/${b.image_path}" alt="thumb"></a>`
           : `<span class="muted">${t("אין")}</span>`}</td>
-        <td>${escapeHtml(b.supplier || "")}</td>
+        <td>${escapeHtml(b.supplier || "")} ${installmentBadge(b)}</td>
         <td>${fmtMoney(b.amount)}</td>
         <td>${escapeHtml(categoryLabel(b.category || ""))}</td>
         <td>${escapeHtml(fmtDate(b.due_date))}</td>
