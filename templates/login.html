@@ -1,5 +1,5 @@
 {% extends "_base.html" %}
-{% block title %}התחברות - BillEase{% endblock %}
+{% block title %}{{ t("התחברות - BillEase") }}{% endblock %}
 {% block bodyclass %}auth-bg{% endblock %}
 {% block content %}
 <main class="auth-wrap">
@@ -7,29 +7,27 @@
     <div class="auth-logo">
       <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="BillEase">
       <h1>BillEase</h1>
-      <p class="muted">ניהול חשבונות פשוט וברור</p>
+      <p class="muted">{{ t("ניהול חשבונות פשוט וברור") }}</p>
     </div>
 
     <form id="login-form" class="form">
-      <label>תעודת זהות</label>
-      <input name="user_id" type="text" required placeholder="לדוגמה 123456789" autocomplete="username">
+      <label>{{ t("תעודת זהות") }}</label>
+      <input name="user_id" type="text" required placeholder="{{ t('לדוגמה 123456789') }}" autocomplete="username">
 
-      <label>סיסמה</label>
+      <label>{{ t("סיסמה") }}</label>
       <input name="password" type="password" required autocomplete="current-password">
 
-      <button type="submit" class="btn primary">התחברות</button>
+      <button type="submit" class="btn primary">{{ t("התחברות") }}</button>
       <p class="form-msg" id="login-msg"></p>
     </form>
 
     <div class="auth-links">
-      <a href="/recover">שכחתי סיסמה</a>
-      <a href="/register">הרשמה למערכת</a>
+      <a href="/recover">{{ t("שכחתי סיסמה") }}</a>
+      <a href="/register">{{ t("הרשמה למערכת") }}</a>
     </div>
-
-    <p class="hint">משתמש לדוגמה: 123456789 / 1234</p>
   </section>
 </main>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+<script src="{{ url_for('static', filename='js/login.js', v='languages1') }}"></script>
 {% endblock %}

@@ -1,57 +1,61 @@
 {% extends "_base.html" %}
-{% block title %}הוספת חשבון - BillEase{% endblock %}
+{% block title %}{{ t("הוספת חשבון - BillEase") }}{% endblock %}
 {% block content %}
 {% include "_nav.html" %}
 <main class="page">
   <div class="page-head">
-    <h1>הוספת חשבון חדש</h1>
-    <p class="muted">אפשר להזין ידנית או להעלות תמונה לזיהוי אוטומטי</p>
+    <h1>{{ t("הוספת חשבון חדש") }}</h1>
+    <p class="muted">{{ t("אפשר להזין ידנית או להעלות תמונה לזיהוי אוטומטי") }}</p>
   </div>
 
   <section class="grid-2">
     <div class="card">
-      <h2>סריקה מתמונה</h2>
+      <h2>{{ t("סריקה מתמונה") }}</h2>
       <form id="scan-form" class="form">
-        <label>תמונת חשבונית</label>
-        <input id="scan-file" name="image" type="file" accept="image/*" capture="environment" required>
-        <button type="submit" class="btn">סריקה</button>
+        <label>{{ t("תמונת חשבונית") }}</label>
+        <div class="file-picker">
+          <label class="btn file-picker-label" for="scan-file">{{ t('Choose file') }}</label>
+          <span id="scan-file-name" dir="auto">{{ t('No file chosen') }}</span>
+          <input id="scan-file" class="native-file-input" name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
+        </div>
+        <button type="submit" class="btn">{{ t("סריקה") }}</button>
         <p class="form-msg" id="scan-msg"></p>
       </form>
       <div id="preview-wrap" class="hidden">
-        <img id="preview" alt="תצוגה מקדימה">
+        <img id="preview" alt="{{ t('תצוגה מקדימה') }}">
       </div>
     </div>
 
     <div class="card">
-      <h2>פרטי החשבון</h2>
+      <h2>{{ t("פרטי החשבון") }}</h2>
       <form id="bill-form" class="form">
         <input type="hidden" name="image_path" id="hidden-image">
 
-        <label>ספק</label>
+        <label>{{ t("ספק") }}</label>
         <input name="supplier" type="text" required autocomplete="off">
 
-        <label>סכום (ש"ח)</label>
+        <label>{{ t("סכום (ש\"ח)") }}</label>
         <input name="amount" type="number" step="0.01" min="0" required>
 
-        <label>קטגוריה</label>
+        <label>{{ t("קטגוריה") }}</label>
         <select name="category" id="cat-select" required></select>
         <small id="cat-hint" class="muted"></small>
 
-        <label>תאריך פירעון</label>
+        <label>{{ t("תאריך פירעון") }}</label>
         <input name="due_date" type="date" required>
 
         <div class="check-row">
           <label class="check">
             <input type="checkbox" id="rec-toggle" name="is_recurring">
-            חשבון חוזר
+            {{ t("חשבון חוזר") }}
           </label>
           <select name="recurrence" id="rec-period" class="hidden">
-            <option value="monthly">חודשי</option>
-            <option value="yearly">שנתי</option>
+            <option value="monthly">{{ t("חודשי") }}</option>
+            <option value="yearly">{{ t("שנתי") }}</option>
           </select>
         </div>
 
-        <button type="submit" class="btn primary">שמירת חשבון</button>
+        <button type="submit" class="btn primary">{{ t("שמירת חשבון") }}</button>
         <p class="form-msg" id="save-msg"></p>
       </form>
     </div>
@@ -59,5 +63,5 @@
 </main>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/add_bill.js') }}"></script>
+<script src="{{ url_for('static', filename='js/add_bill.js', v='languages1') }}"></script>
 {% endblock %}

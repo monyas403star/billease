@@ -1,44 +1,44 @@
 {% extends "_base.html" %}
-{% block title %}שחזור סיסמה - BillEase{% endblock %}
+{% block title %}{{ t("שחזור סיסמה - BillEase") }}{% endblock %}
 {% block bodyclass %}auth-bg{% endblock %}
 {% block content %}
 <main class="auth-wrap">
   <section class="card auth-card">
     <div class="auth-logo">
       <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="BillEase">
-      <h1>שחזור סיסמה</h1>
-      <p class="muted">נשלח אליך קוד חד-פעמי לאימייל</p>
+      <h1>{{ t("שחזור סיסמה") }}</h1>
+      <p class="muted">{{ t("נשלח אליך קוד חד-פעמי לאימייל") }}</p>
     </div>
 
     <!-- step 1 -->
     <form id="otp-request" class="form">
-      <label>תעודת זהות</label>
+      <label>{{ t("תעודת זהות") }}</label>
       <input name="user_id" type="text" required>
-      <button type="submit" class="btn primary">שליחת קוד</button>
+      <button type="submit" class="btn primary">{{ t("שליחת קוד") }}</button>
       <p class="form-msg" id="step1-msg"></p>
     </form>
 
     <!-- step 2 -->
     <form id="otp-reset" class="form hidden">
-      <label>תעודת זהות</label>
+      <label>{{ t("תעודת זהות") }}</label>
       <input name="user_id" type="text" required>
 
-      <label>קוד חד-פעמי (מהמייל)</label>
+      <label>{{ t("קוד חד-פעמי (מהמייל)") }}</label>
       <input name="otp" type="text" required maxlength="6">
 
-      <label>סיסמה חדשה</label>
-      <input name="new_password" type="password" required minlength="4">
+      <label>{{ t("סיסמה חדשה") }}</label>
+      <input name="new_password" type="password" required minlength="8">
 
-      <button type="submit" class="btn primary">איפוס סיסמה</button>
+      <button type="submit" class="btn primary">{{ t("איפוס סיסמה") }}</button>
       <p class="form-msg" id="step2-msg"></p>
     </form>
 
     <div class="auth-links">
-      <a href="{{ url_for('root') }}">חזרה להתחברות</a>
+      <a href="{{ url_for('root') }}">{{ t("חזרה להתחברות") }}</a>
     </div>
   </section>
 </main>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/recover.js') }}"></script>
+<script src="{{ url_for('static', filename='js/recover.js', v='languages1') }}"></script>
 {% endblock %}
