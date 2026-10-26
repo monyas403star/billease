@@ -547,3 +547,15 @@ input[type="email"], input[type="tel"], input[type="number"], input[type="date"]
 .auth-wrap { width: 100%; min-width: 0; }
 .auth-card { width: 100%; max-width: 420px; min-width: 0; }
 .auth-card input:not([type="radio"]):not([type="checkbox"]) { min-width: 0; width: 100%; }
+
+/* Business insights */
+.insights-panel { margin-block: 20px; }
+.insight-item {padding:18px; border:1px solid var(--border, #e2e8f0);border-radius:14px;background:var(--bg, #f8fafc);min-width:0;overflow-wrap:anywhere;}
+.insight-item h3 {margin:0 0 8px;font-size:16px;}
+.insight-item p {margin:0;line-height:1.7;}
+#annual-change {font-size:22px;}
+
+#budget-body {vertical-align:middle;}
+.insights-panel + .grid-2 {margin-block:20px;}
+
+.budget-table {min-width:650px;}
