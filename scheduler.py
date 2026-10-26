@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 
 import db
 import mailer
+import email_text
 
 logger = logging.getLogger(__name__)
 _started = False
@@ -78,23 +79,7 @@ def _insert_event(conn, row, kind, today):
     supplier = row['supplier'] or 'הספק'
     amount = f"{float(row['amount']):.2f}"
     due_text = due.strftime('%d/%m/%Y') if due else (due_raw or 'לא צוין')
-    details = f'ספק: {supplier}\nסכום: {amount} ש״ח\nמועד לתשלום: {due_text}'
-    if kind == 'deleted':
-        subject = 'BillEase — אישור מחיקת חשבון'
-        body = (f'שלום {full_name},\n\nהחשבון הבא נמחק מהחשבון שלך במערכת BillEase:\n'
-                f'{details}\n\nהמחיקה במערכת אינה תשלום או ביטול חוב אצל הספק.')
-    elif kind == 'paid':
-        subject = 'BillEase — החשבון סומן כשולם'
-        body = (f'שלום {full_name},\n\nהחשבון הבא סומן כשולם במערכת BillEase:\n'
-                f'{details}\n\nזהו אישור רישום במערכת, ולא אישור סליקה מהספק.')
-    elif kind == 'seven_days':
-        subject = 'BillEase — תזכורת: מועד התשלום מתקרב'
-        body = (f'שלום {full_name},\n\nמועד התשלום חל במהלך שבעת הימים הקרובים:\n{details}\n\n'
-                'אם שילמתם, סמנו את החשבון כשולם באתר.')
-    else:
-        subject = 'BillEase — חשבון באיחור בתשלום'
-        body = (f'שלום {full_name},\n\nמועד התשלום של החשבון הבא עבר והוא עדיין מסומן כפתוח:\n'
-                f'{details}\n\nאם שילמתם, עדכנו את מצב החשבון באתר.')
+    subject, body = email_text.bill(row['language'], kind, full_name, supplier, amount, due_text)
     conn.execute('''
         INSERT INTO bill_email_events
             (user_id, bill_id, kind, due_date, recipient, subject, body,
@@ -112,7 +97,7 @@ def _insert_event(conn, row, kind, today):
 def queue_payment(conn, bill_id, user_id):
     """Use the same transaction as marking paid, so a failed commit sends no email."""
     row = conn.execute('''
-        SELECT b.*, u.email, u.full_name FROM bills b
+        SELECT b.*, u.email, u.full_name, u.language FROM bills b
         JOIN users u ON u.user_id=b.user_id
         WHERE b.bill_id=? AND b.user_id=? AND b.is_paid=1
     ''', (bill_id, user_id)).fetchone()
@@ -126,7 +111,7 @@ def queue_payment(conn, bill_id, user_id):
 
 def queue_deletion(conn, bill_id, user_id):
     """Capture recipient and bill details before deletion, in its transaction."""
-    row = conn.execute("""SELECT b.*,u.email,u.full_name FROM bills b
+    row = conn.execute("""SELECT b.*,u.email,u.full_name,u.language FROM bills b
                           JOIN users u ON u.user_id=b.user_id
                           WHERE b.bill_id=? AND b.user_id=?""", (bill_id,user_id)).fetchone()
     if row is None:
@@ -162,7 +147,7 @@ def queue_reminders(today=None):
     try:
         with conn:
             conn.execute('BEGIN IMMEDIATE')
-            rows = conn.execute('''SELECT b.*, u.email, u.full_name FROM bills b
+            rows = conn.execute('''SELECT b.*, u.email, u.full_name, u.language FROM bills b
                                     JOIN users u ON u.user_id=b.user_id
                                     WHERE b.is_paid=0''').fetchall()
             for row in rows:

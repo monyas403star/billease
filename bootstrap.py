@@ -70,6 +70,10 @@ def init_db():
     """)
     conn.commit()
 
+    if "language" not in {row[1] for row in cur.execute("PRAGMA table_info(users)")}:
+        cur.execute("ALTER TABLE users ADD COLUMN language TEXT NOT NULL DEFAULT 'he'")
+        conn.commit()
+
     # إدخال بعض الفئات الافتراضية إذا كانت فارغة
     default_cats = ['חשמל', 'מים', 'אינטרנט', 'טלפון', 'ביטוח', 'שכר דירה', 'ארנונה', 'אחר']
     for cat in default_cats:

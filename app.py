@@ -21,6 +21,8 @@ import bootstrap
 import db
 import ocr
 import mailer
+import email_text
+import payments
 import pdfgen
 import categorize
 import i18n
@@ -250,16 +252,19 @@ def api_register():
     name = security.text(data, "full_name", 100, required=True)
     email = security.email(security.text(data, "email", 254, required=True))
     phone = security.text(data, "phone", 30)
+    locale = data.get("language", i18n.language())
+    if not isinstance(locale, str) or locale not in i18n.LANGUAGES:
+        raise BadRequest("Invalid language")
     pw = security.password(data, "password", new=True)
     if not security.rate_allowed("register", request.remote_addr or "unknown", 20, 3600):
         return jsonify(ok=False, error="יותר מדי ניסיונות. נסו שוב מאוחר יותר"), 429
     try:
-        db.query("INSERT INTO users (user_id,full_name,email,phone,password_hash) VALUES (?,?,?,?,?)",
-                 (user_id, name, email, phone, hash_pw(pw)))
+        db.query("INSERT INTO users (user_id,full_name,email,phone,password_hash,language) VALUES (?,?,?,?,?,?)",
+                 (user_id, name, email, phone, hash_pw(pw), locale))
     except sqlite3.IntegrityError:
         return jsonify(ok=False, error="מספר הזהות כבר רשום במערכת"), 400
     try:
-        mailer.send_email(email, "ברוך הבא ל-BillEase", f"שלום {name}, החשבון שלך מוכן לשימוש!")
+        mailer.send_email(email, *email_text.welcome(locale, name))
     except Exception:
         app.logger.warning("Welcome email failed; account was created")
     session.clear()
@@ -294,14 +299,13 @@ def api_recover_request():
     if not security.rate_allowed("recover", user_id, 3):
         return jsonify(ok=False, error="יותר מדי בקשות לקוד. נסו שוב בעוד 15 דקות"), 429
     generic = "אם החשבון קיים, הקוד הועבר לשליחה. בדקו גם בתיקיית הספאם."
-    row = db.query("SELECT user_id,email FROM users WHERE user_id=?", (user_id,), fetch=True, one=True)
+    row = db.query("SELECT user_id,email,language FROM users WHERE user_id=?", (user_id,), fetch=True, one=True)
     if not row:
         return jsonify(ok=True, msg=generic)
     code = gen_otp()
     digest = security.save_reset(user_id, code, app.secret_key)
     try:
-        sent = mailer.send_email(row["email"], "איפוס סיסמה ל-BillEase",
-                                 f"קוד החד-פעמי שלך: {code}\nתוקפו 10 דקות.")
+        sent = mailer.send_email(row["email"], *email_text.recovery(row["language"], code))
     except Exception:
         sent = False
     if not sent:
@@ -414,14 +418,28 @@ def api_bill_add():
     if not category:
         category = "אחר"
 
-    bill_id = db.query(
-        "INSERT INTO bills (user_id, supplier, amount, category, due_date, "
-        "is_paid, is_recurring, recurrence, image_path, source) "
-        "VALUES (%s, %s, %s, %s, %s, 0, %s, %s, %s, %s)",
-        (session["user_id"], supplier, amount, category, due_date,
-         is_recurring, recurrence, image_path, source),
-    )
-    return jsonify(ok=True, bill_id=bill_id, category=category)
+    schedule = data.get("installments")
+    if schedule is not None:
+        if is_recurring:
+            raise BadRequest("Installments cannot also repeat indefinitely")
+        schedule = payments.validate(schedule)
+    else:
+        schedule = [dict(amount=amount, due_date=due_date)]
+    conn = db.get_conn()
+    ids = []
+    try:
+        with conn:
+            for payment in schedule:
+                cur = conn.execute(
+                    "INSERT INTO bills (user_id,supplier,amount,category,due_date,is_paid,"
+                    "is_recurring,recurrence,image_path,source) VALUES (?,?,?,?,?,0,?,?,?,?)",
+                    (session["user_id"], supplier, payment["amount"], category, payment["due_date"],
+                     is_recurring, recurrence, image_path, source))
+                ids.append(cur.lastrowid)
+    finally:
+        conn.close()
+    return jsonify(ok=True, bill_id=ids[0], bill_ids=ids, category=category)
+
 
 
 @app.route("/api/bills/<int:bill_id>/pay", methods=["POST"])
@@ -648,6 +666,7 @@ def api_bill_scan():
         ocr_error=parsed.get("error"),
         ocr_notice=parsed.get("notice"),
         document_type=parsed.get("document_type", "unknown"),
+        installments=parsed.get("installments", []),
     )
 
 

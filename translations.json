@@ -262,7 +262,20 @@
     "OCR failed": "הסריקה נכשלה. נסו שוב או מלאו ידנית.",
     "ok": "תקין",
     "tesseract not installed": "מנוע הסריקה אינו זמין",
-    "שירות הסריקה הגיע למגבלת שימוש או רصيد. בדקו יתרה ונסו שוב מאוחר יותר.": "שירות הסריקה הגיע למגבלת שימוש או יתרה. בדקו יתרה ונסו שוב מאוחר יותר."
+    "שירות הסריקה הגיע למגבלת שימוש או רصيد. בדקו יתרה ונסו שוב מאוחר יותר.": "שירות הסריקה הגיע למגבלת שימוש או יתרה. בדקו יתרה ונסו שוב מאוחר יותר.",
+    "Payment schedule": "לוח תשלומים",
+    "Pay in installments": "תשלום בתשלומים",
+    "Number of monthly payments": "מספר תשלומים חודשיים",
+    "Build monthly schedule": "יצירת לוח תשלומים חודשי",
+    "Use the amount of one payment and the first payment date above. Review each payment before saving.": "הזינו למעלה סכום של תשלום אחד ותאריך ראשון. בדקו כל תשלום לפני השמירה.",
+    "Payment amount": "סכום התשלום",
+    "Payment date": "תאריך התשלום",
+    "Enter a payment amount, first date and 1–120 payments.": "הזינו סכום לתשלום, תאריך ראשון ומספר תשלומים בין 1 ל-120.",
+    "Build and review the payment schedule before saving.": "צרו ובדקו את לוח התשלומים לפני השמירה.",
+    "Invalid payment schedule (1–120 payments required)": "לוח תשלומים לא תקין (נדרשים 1–120 תשלומים)",
+    "Invalid payment schedule": "לוח תשלומים לא תקין",
+    "Installments cannot also repeat indefinitely": "לא ניתן לשלב תשלומים עם חזרה ללא הגבלה",
+    "Review the payment schedule and complete missing amounts or dates manually.": "בדקו את לוח התשלומים והשלימו סכומים או תאריכים חסרים ידנית."
   },
   "ar": {
     "דשבורד": "لوحة التحكم",
@@ -527,7 +540,20 @@
     "OCR failed": "فشل المسح. حاول مجددًا أو أدخل التفاصيل يدويًا.",
     "ok": "سليم",
     "tesseract not installed": "محرك المسح غير متاح",
-    "שירות הסריקה הגיע למגבלת שימוש או רصيد. בדקו יתרה ונסו שוב מאוחר יותר.": "بلغت خدمة المسح حد الاستخدام أو الرصيد. تحقّق من الرصيد وحاول لاحقًا."
+    "שירות הסריקה הגיע למגבלת שימוש או רصيد. בדקו יתרה ונסו שוב מאוחר יותר.": "بلغت خدمة المسح حد الاستخدام أو الرصيد. تحقّق من الرصيد وحاول لاحقًا.",
+    "Payment schedule": "جدول الدفعات",
+    "Pay in installments": "الدفع على أقساط",
+    "Number of monthly payments": "عدد الدفعات الشهرية",
+    "Build monthly schedule": "إنشاء جدول دفعات شهرية",
+    "Use the amount of one payment and the first payment date above. Review each payment before saving.": "أدخل أعلاه مبلغ الدفعة الواحدة وتاريخ أول دفعة. راجع كل دفعة قبل الحفظ.",
+    "Payment amount": "مبلغ الدفعة",
+    "Payment date": "تاريخ الدفعة",
+    "Enter a payment amount, first date and 1–120 payments.": "أدخل مبلغ الدفعة والتاريخ الأول وعدد الدفعات من 1 إلى 120.",
+    "Build and review the payment schedule before saving.": "أنشئ جدول الدفعات وراجعه قبل الحفظ.",
+    "Invalid payment schedule (1–120 payments required)": "جدول الدفعات غير صالح (المطلوب من 1 إلى 120 دفعة)",
+    "Invalid payment schedule": "جدول دفعات غير صالح",
+    "Installments cannot also repeat indefinitely": "لا يمكن الجمع بين الأقساط والتكرار غير المحدود",
+    "Review the payment schedule and complete missing amounts or dates manually.": "راجع جدول الدفعات وأكمل المبالغ أو التواريخ الناقصة يدوياً."
   },
   "en": {
     "דשבורד": "Dashboard",
@@ -792,6 +818,19 @@
     "OCR failed": "Scan failed. Try again or enter details manually.",
     "ok": "OK",
     "tesseract not installed": "Scan engine unavailable",
-    "שירות הסריקה הגיע למגבלת שימוש או רصيد. בדקו יתרה ונסו שוב מאוחר יותר.": "Scan usage or credit limit reached. Check your balance and try later."
+    "שירות הסריקה הגיע למגבלת שימוש או רصيد. בדקו יתרה ונסו שוב מאוחר יותר.": "Scan usage or credit limit reached. Check your balance and try later.",
+    "Payment schedule": "Payment schedule",
+    "Pay in installments": "Pay in installments",
+    "Number of monthly payments": "Number of monthly payments",
+    "Build monthly schedule": "Build monthly schedule",
+    "Use the amount of one payment and the first payment date above. Review each payment before saving.": "Use the amount of one payment and the first payment date above. Review each payment before saving.",
+    "Payment amount": "Payment amount",
+    "Payment date": "Payment date",
+    "Enter a payment amount, first date and 1–120 payments.": "Enter a payment amount, first date and 1–120 payments.",
+    "Build and review the payment schedule before saving.": "Build and review the payment schedule before saving.",
+    "Invalid payment schedule (1–120 payments required)": "Invalid payment schedule (1–120 payments required)",
+    "Invalid payment schedule": "Invalid payment schedule",
+    "Installments cannot also repeat indefinitely": "Installments cannot also repeat indefinitely",
+    "Review the payment schedule and complete missing amounts or dates manually.": "Review the payment schedule and complete missing amounts or dates manually."
   }
 }

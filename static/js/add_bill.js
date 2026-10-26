@@ -15,6 +15,56 @@ const hiddenImage = document.getElementById("hidden-image");
 const recToggle = document.getElementById("rec-toggle");
 const recPeriod = document.getElementById("rec-period");
 
+const installmentToggle = document.getElementById('installment-toggle');
+const installmentFields = document.getElementById('installment-fields');
+const paymentRows = document.getElementById('payment-rows');
+const paymentCount = document.getElementById('payment-count');
+function setInstallments(enabled) {
+  installmentToggle.checked = enabled;
+  installmentFields.classList.toggle('hidden', !enabled);
+  paymentRows.querySelectorAll('input').forEach(input => input.disabled = !enabled);
+  recToggle.disabled = enabled;
+  if (enabled) { recToggle.checked = false; recPeriod.classList.add('hidden'); }
+}
+function renderPayments(rows) {
+  paymentRows.replaceChildren();
+  rows.forEach((payment, index) => {
+    const row = document.createElement('div');
+    row.className = 'payment-row';
+    const label = document.createElement('span');
+    label.textContent = String(index + 1);
+    const amount = document.createElement('input');
+    Object.assign(amount, {type: 'number', min: '0.01', max: '999999999.99', step: '0.01', required: true, value: payment.amount ?? ''});
+    amount.dataset.field = 'amount';
+    amount.setAttribute('aria-label', t('Payment amount') + ' ' + (index + 1));
+    const date = document.createElement('input');
+    Object.assign(date, {type: 'date', required: true, value: payment.due_date || ''});
+    date.dataset.field = 'due_date';
+    date.setAttribute('aria-label', t('Payment date') + ' ' + (index + 1));
+    row.append(label, amount, date);
+    paymentRows.append(row);
+  });
+  paymentCount.value = rows.length;
+  setInstallments(true);
+}
+installmentToggle.addEventListener('change', () => setInstallments(installmentToggle.checked));
+document.getElementById('generate-payments').addEventListener('click', () => {
+  const count = Number(paymentCount.value);
+  const first = billForm.due_date.value;
+  if (!Number.isInteger(count) || count < 1 || count > 120 || !first || !billForm.amount.value) {
+    showMsg(saveMsg, t('Enter a payment amount, first date and 1–120 payments.'), false);
+    return;
+  }
+  const [year, month, day] = first.split('-').map(Number);
+  const rows = Array.from({length: count}, (_, i) => {
+    const d = new Date(Date.UTC(year, month - 1 + i, 1));
+    const last = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+    d.setUTCDate(Math.min(day, last));
+    return {amount: billForm.amount.value, due_date: d.toISOString().slice(0, 10)};
+  });
+  renderPayments(rows);
+});
+
 let scanning = false;
 let saving = false;
 let previewUrl = null;
@@ -144,6 +194,11 @@ scanForm.addEventListener("submit", async (event) => {
 
   hiddenImage.value = "";
   // A new scan must not keep fields returned by a previous image.
+  setInstallments(false);
+  paymentRows.replaceChildren();
+  paymentCount.value = 1;
+  recToggle.checked = false;
+  recPeriod.classList.add('hidden');
   billForm.supplier.value = "";
   billForm.amount.value = "";
   billForm.due_date.value = "";
@@ -220,6 +275,8 @@ scanForm.addEventListener("submit", async (event) => {
       ? dateValue
       : "";
 
+    if (Array.isArray(res.installments) && res.installments.length) renderPayments(res.installments);
+
     await categoriesReady;
 
     if (res.category) {
@@ -286,6 +343,19 @@ billForm.addEventListener("submit", async (event) => {
   try {
     const data = formToObj(billForm);
     data.is_recurring = recToggle.checked;
+    if (installmentToggle.checked) {
+      const rows = [...paymentRows.querySelectorAll('.payment-row')];
+      if (!rows.length || rows.length !== Number(paymentCount.value)) {
+        showMsg(saveMsg, t('Build and review the payment schedule before saving.'), false);
+        return;
+      }
+      data.installments = rows.map(row => ({
+        amount: row.querySelector('[data-field="amount"]').value,
+        due_date: row.querySelector('[data-field="due_date"]').value,
+      }));
+      data.amount = data.installments[0].amount;
+      data.due_date = data.installments[0].due_date;
+    }
 
     const res = await apiSend("/api/bills", "POST", data);
 

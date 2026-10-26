@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
+    language VARCHAR(2) NOT NULL DEFAULT 'he',
     password_hash VARCHAR(255) NOT NULL,
     is_admin BOOLEAN DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
