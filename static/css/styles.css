@@ -521,5 +521,29 @@ input[type="email"], input[type="tel"], input[type="number"], input[type="date"]
   .row-form { flex-direction: column; align-items: stretch; }
   .row-form select, .row-form input, .row-form button { width: 100%; flex: auto; }
 }
+/* Account language is selected in registration/profile, never in a top dropdown. */
+.account-language { border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin: 4px 0 12px; min-width: 0; }
+.account-language legend { font-size: 14px; font-weight: 700; padding: 0 6px; }
+.account-language p { font-size: 12px; margin: 0 0 10px; }
+.language-buttons { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.form .language-button { position: relative; display: block; margin: 0; cursor: pointer; }
+.language-button input { position: absolute; opacity: 0; width: 1px; height: 1px; padding: 0; }
+.language-button span { display: flex; justify-content: center; align-items: center; min-height: 42px; border: 1px solid var(--border); border-radius: 8px; background: #fff; font-size: 13px; }
+.language-button input:checked + span { color: #fff; background: var(--primary); border-color: var(--primary); font-weight: 700; }
+.language-button input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+.plan-controls { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.plan-controls label, #installment-panel > label { display: flex; flex-direction: column; gap: 6px; }
+.plan-controls input, #installment-total { min-width: 0; width: 100%; }
+.plan-row { display: grid; grid-template-columns: 36px minmax(65px,1fr) minmax(125px,1.4fr); align-items: center; gap: 6px; margin: 8px 0; }
+.plan-row input { width: 100%; min-width: 0; padding: 8px 5px; font-size: 13px; }
+.plan-heading { font-size: 12px; font-weight: 700; }
+.payment-number { direction: ltr; font-size: 12px; text-align: center; }
+#installment-panel h3 { margin: 8px 0; font-size: 16px; }
+#generate-installments { margin-top: 10px; white-space: normal; }
+@media(max-width: 450px) { .plan-controls { grid-template-columns: minmax(0,1fr); } }
 
-.language-buttons{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.payment-row{display:flex;gap:8px;margin:8px 0}.payment-row input{min-width:0;flex:1}
+/* Language buttons and long form values must fit on small registration screens. */
+.auth-bg::before, .auth-bg::after { display: none; }
+.auth-wrap { width: 100%; min-width: 0; }
+.auth-card { width: 100%; max-width: 420px; min-width: 0; }
+.auth-card input:not([type="radio"]):not([type="checkbox"]) { min-width: 0; width: 100%; }
