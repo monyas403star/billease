@@ -4,6 +4,8 @@ Status 'sent' means accepted by the email provider, not verified inbox delivery.
 The outbox must live on durable storage to survive restarts/redeployments.
 """
 import logging
+import json
+import re
 import os
 import threading
 import time
@@ -13,7 +15,8 @@ from zoneinfo import ZoneInfo
 
 import db
 import mailer
-import email_text
+import i18n
+import email_templates
 
 logger = logging.getLogger(__name__)
 _started = False
@@ -27,6 +30,7 @@ def local_today():
 
 
 def init_schema():
+    i18n.init_schema()
     # Expand the existing CHECK constraint without losing event IDs or retry state.
     create_sql = """
                 CREATE TABLE IF NOT EXISTS bill_email_events (
@@ -62,6 +66,11 @@ def init_schema():
                 conn.execute('ALTER TABLE _bill_email_events_v2 RENAME TO bill_email_events')
             else:
                 conn.execute(create_sql)
+            columns = {r['name'] for r in conn.execute('PRAGMA table_info(bill_email_events)')}
+            if 'language' not in columns:
+                conn.execute("ALTER TABLE bill_email_events ADD COLUMN language TEXT NOT NULL DEFAULT 'he'")
+            if 'payload_json' not in columns:
+                conn.execute("ALTER TABLE bill_email_events ADD COLUMN payload_json TEXT")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_bill_email_pending ON bill_email_events(status,next_attempt,lease_until)")
     finally:
         conn.close()
@@ -75,19 +84,21 @@ def _insert_event(conn, row, kind, today):
         if kind != 'deleted':
             raise
         due = None
-    full_name = row['full_name'] or ''
-    supplier = row['supplier'] or 'הספק'
-    amount = f"{float(row['amount']):.2f}"
-    due_text = due.strftime('%d/%m/%Y') if due else (due_raw or 'לא צוין')
-    subject, body = email_text.bill(row['language'], kind, full_name, supplier, amount, due_text)
+    row = dict(row)
+    locale = row.get('preferred_language') or 'he'
+    snapshot = dict(full_name=row.get('full_name') or '', supplier=row.get('supplier') or '',
+                    amount=f"{float(row['amount']):.2f}",
+                    due_text=due.strftime('%d/%m/%Y') if due else due_raw,
+                    installment_number=row.get('installment_number'), installment_count=row.get('installment_count'))
+    subject, body = email_templates.bill_event(kind, locale, snapshot)
     conn.execute('''
         INSERT INTO bill_email_events
             (user_id, bill_id, kind, due_date, recipient, subject, body,
-             idempotency_key, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+             idempotency_key, created_at, language, payload_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(user_id, bill_id, kind, due_date) DO NOTHING
     ''', (row['user_id'], row['bill_id'], kind, due.isoformat() if due else due_raw, row['email'] or '',
-          subject, body, str(uuid.uuid4()), time.time()))
+          subject, body, str(uuid.uuid4()), time.time(), locale, json.dumps(snapshot,ensure_ascii=False)))
     event = conn.execute('''SELECT event_id FROM bill_email_events
                             WHERE user_id=? AND bill_id=? AND kind=? AND due_date=?''',
                          (row['user_id'], row['bill_id'], kind, due.isoformat() if due else due_raw)).fetchone()
@@ -97,7 +108,7 @@ def _insert_event(conn, row, kind, today):
 def queue_payment(conn, bill_id, user_id):
     """Use the same transaction as marking paid, so a failed commit sends no email."""
     row = conn.execute('''
-        SELECT b.*, u.email, u.full_name, u.language FROM bills b
+        SELECT b.*, u.email, u.full_name, u.preferred_language FROM bills b
         JOIN users u ON u.user_id=b.user_id
         WHERE b.bill_id=? AND b.user_id=? AND b.is_paid=1
     ''', (bill_id, user_id)).fetchone()
@@ -111,7 +122,7 @@ def queue_payment(conn, bill_id, user_id):
 
 def queue_deletion(conn, bill_id, user_id):
     """Capture recipient and bill details before deletion, in its transaction."""
-    row = conn.execute("""SELECT b.*,u.email,u.full_name,u.language FROM bills b
+    row = conn.execute("""SELECT b.*,u.email,u.full_name,u.preferred_language FROM bills b
                           JOIN users u ON u.user_id=b.user_id
                           WHERE b.bill_id=? AND b.user_id=?""", (bill_id,user_id)).fetchone()
     if row is None:
@@ -147,7 +158,7 @@ def queue_reminders(today=None):
     try:
         with conn:
             conn.execute('BEGIN IMMEDIATE')
-            rows = conn.execute('''SELECT b.*, u.email, u.full_name, u.language FROM bills b
+            rows = conn.execute('''SELECT b.*, u.email, u.full_name, u.preferred_language FROM bills b
                                     JOIN users u ON u.user_id=b.user_id
                                     WHERE b.is_paid=0''').fetchall()
             for row in rows:
@@ -197,6 +208,26 @@ def _claim(event_id=None, today=None):
                     conn.execute("UPDATE bill_email_events SET status='failed' WHERE event_id=?",
                                  (event['event_id'],))
                     continue
+                event = dict(event)
+                if event['attempts'] == 0:
+                    user = conn.execute('SELECT preferred_language,full_name FROM users WHERE user_id=?', (event['user_id'],)).fetchone()
+                    locale = user['preferred_language'] if user else 'he'
+                    try:
+                        snapshot = json.loads(event.get('payload_json') or 'null')
+                    except (ValueError,TypeError):
+                        snapshot = None
+                    if not isinstance(snapshot,dict):
+                        # Compatibility for pending events created by the previous Hebrew-only release.
+                        supplier = re.search(r'^ספק: (.*)$', event['body'], re.M)
+                        amount = re.search(r'^סכום: ([0-9.]+) ש״ח$', event['body'], re.M)
+                        due = re.search(r'^מועד לתשלום: (.*)$', event['body'], re.M)
+                        if supplier and amount and due:
+                            snapshot = dict(full_name=user['full_name'] if user else '', supplier=supplier[1], amount=amount[1], due_text=due[1])
+                    if isinstance(snapshot,dict):
+                        subject, body = email_templates.bill_event(event['kind'], locale, snapshot)
+                        conn.execute('UPDATE bill_email_events SET subject=?,body=?,language=? WHERE event_id=?',
+                                     (subject,body,locale,event['event_id']))
+                        event.update(subject=subject,body=body,language=locale)
                 token = str(uuid.uuid4())
                 conn.execute('''UPDATE bill_email_events SET status='sending',
                                 attempts=attempts+1, claim_token=?, lease_until=?

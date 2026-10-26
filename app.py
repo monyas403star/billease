@@ -21,16 +21,18 @@ import bootstrap
 import db
 import ocr
 import mailer
-import email_text
-import payments
 import pdfgen
 import categorize
 import i18n
+import email_templates
+import payment_plans
 import scheduler
 
 # auto-create DB + tables + demo data on first start (idempotent)
 bootstrap.DB_FILE = db.database_path()
 bootstrap.init_db()
+i18n.init_schema()
+payment_plans.init_schema()
 scheduler.init_schema()
 security.init_schema()
 
@@ -131,7 +133,7 @@ def current_user():
     if not need_login():
         return None
     row = db.query(
-        "SELECT user_id, full_name, email, phone, is_admin FROM users WHERE user_id=%s",
+        "SELECT user_id, full_name, email, phone, is_admin, preferred_language FROM users WHERE user_id=%s",
         (session["user_id"],),
         fetch=True, one=True,
     )
@@ -248,28 +250,28 @@ def uploaded_file(fname):
 @app.route("/api/register", methods=["POST"])
 def api_register():
     data = security.json_object(request)
+    preferred_language = i18n.parse_language(data.get("preferred_language", i18n.language()))
+    i18n.use_language(preferred_language)
     user_id = security.text(data, "user_id", 64, required=True)
     name = security.text(data, "full_name", 100, required=True)
     email = security.email(security.text(data, "email", 254, required=True))
     phone = security.text(data, "phone", 30)
-    locale = data.get("language", i18n.language())
-    if not isinstance(locale, str) or locale not in i18n.LANGUAGES:
-        raise BadRequest("Invalid language")
     pw = security.password(data, "password", new=True)
     if not security.rate_allowed("register", request.remote_addr or "unknown", 20, 3600):
         return jsonify(ok=False, error="יותר מדי ניסיונות. נסו שוב מאוחר יותר"), 429
     try:
-        db.query("INSERT INTO users (user_id,full_name,email,phone,password_hash,language) VALUES (?,?,?,?,?,?)",
-                 (user_id, name, email, phone, hash_pw(pw), locale))
+        db.query("INSERT INTO users (user_id,full_name,email,phone,password_hash,preferred_language) VALUES (?,?,?,?,?,?)",
+                 (user_id, name, email, phone, hash_pw(pw), preferred_language))
     except sqlite3.IntegrityError:
         return jsonify(ok=False, error="מספר הזהות כבר רשום במערכת"), 400
     try:
-        mailer.send_email(email, *email_text.welcome(locale, name))
+        mailer.send_email(email, *email_templates.welcome(preferred_language, name))
     except Exception:
         app.logger.warning("Welcome email failed; account was created")
     session.clear()
     session.update(user_id=user_id, full_name=name, auth_version=security.version(user_id))
-    return jsonify(ok=True, redirect=url_for("dashboard_page"))
+    i18n.use_language(preferred_language)
+    return jsonify(ok=True, language=preferred_language, redirect=url_for("dashboard_page"))
 
 
 @app.route("/api/login", methods=["POST"])
@@ -279,7 +281,7 @@ def api_login():
     pw = security.password(data, "password")
     if not security.rate_allowed("login", user_id, 20):
         return jsonify(ok=False, error="יותר מדי ניסיונות. נסו שוב בעוד 15 דקות"), 429
-    row = db.query("SELECT user_id,full_name,password_hash FROM users WHERE user_id=?",
+    row = db.query("SELECT user_id,full_name,password_hash,preferred_language FROM users WHERE user_id=?",
                    (user_id,), fetch=True, one=True)
     if not row or not security.password_matches(row["password_hash"], pw):
         return jsonify(ok=False, error="פרטי ההתחברות אינם נכונים"), 401
@@ -289,7 +291,8 @@ def api_login():
     session.clear()
     session.update(user_id=user_id, full_name=row["full_name"], auth_version=security.version(user_id))
     scheduler.wake()
-    return jsonify(ok=True, name=row["full_name"])
+    i18n.use_language(row["preferred_language"])
+    return jsonify(ok=True, name=row["full_name"], language=row["preferred_language"])
 
 
 @app.route("/api/recover/request", methods=["POST"])
@@ -299,13 +302,13 @@ def api_recover_request():
     if not security.rate_allowed("recover", user_id, 3):
         return jsonify(ok=False, error="יותר מדי בקשות לקוד. נסו שוב בעוד 15 דקות"), 429
     generic = "אם החשבון קיים, הקוד הועבר לשליחה. בדקו גם בתיקיית הספאם."
-    row = db.query("SELECT user_id,email,language FROM users WHERE user_id=?", (user_id,), fetch=True, one=True)
+    row = db.query("SELECT user_id,email,preferred_language FROM users WHERE user_id=?", (user_id,), fetch=True, one=True)
     if not row:
         return jsonify(ok=True, msg=generic)
     code = gen_otp()
     digest = security.save_reset(user_id, code, app.secret_key)
     try:
-        sent = mailer.send_email(row["email"], *email_text.recovery(row["language"], code))
+        sent = mailer.send_email(row["email"], *email_templates.recovery(row["preferred_language"], code))
     except Exception:
         sent = False
     if not sent:
@@ -350,6 +353,7 @@ def api_profile_update():
     new_pw = security.password(data, "password", new=True, optional=True)
     user_id = session["user_id"]
     previous = current_user()
+    preferred_language = i18n.parse_language(data.get("preferred_language", previous["preferred_language"]))
     conn = db.get_conn()
     try:
         with conn:
@@ -359,6 +363,7 @@ def api_profile_update():
                              (name, email, phone, hash_pw(new_pw), user_id))
             else:
                 conn.execute("UPDATE users SET full_name=?,email=?,phone=? WHERE user_id=?", (name,email,phone,user_id))
+            conn.execute("UPDATE users SET preferred_language=? WHERE user_id=?", (preferred_language, user_id))
             # Updating recovery email or password invalidates other sessions/codes.
             if new_pw or previous["email"] != email:
                 security.bump_version(conn, user_id)
@@ -367,7 +372,8 @@ def api_profile_update():
         conn.close()
     session["auth_version"] = security.version(user_id)
     session["full_name"] = name
-    return jsonify(ok=True)
+    i18n.use_language(preferred_language)
+    return jsonify(ok=True, language=preferred_language)
 
 
 # ------------------ bills api ------------------
@@ -378,7 +384,7 @@ def api_bills_list():
         return jsonify(ok=False, error="לא מחובר"), 401
     rows = db.query(
         "SELECT bill_id, supplier, amount, category, due_date, is_paid, "
-        "is_recurring, recurrence, image_path, source "
+        "is_recurring, recurrence, image_path, source, payment_plan_id, installment_number, installment_count "
         "FROM bills WHERE user_id=%s ORDER BY due_date ASC",
         (session["user_id"],), fetch=True,
     )
@@ -395,10 +401,13 @@ def api_bill_add():
         return jsonify(ok=False, error="לא מחובר"), 401
     data = security.json_object(request)
     supplier = security.text(data, "supplier", 150, required=True)
-    amount = security.money(data.get("amount"))
+    payment_mode = data.get("payment_mode", "single")
+    if payment_mode not in ("single", "recurring", "installments"):
+        raise BadRequest("סוג התשלום אינו תקין")
+    amount = security.money(data.get("amount")) if payment_mode != "installments" else None
     category = security.text(data, "category", 80)
-    due_date = security.due_date(security.text(data, "due_date", 10, required=True))
-    recurring = data.get("is_recurring", False)
+    due_date = security.due_date(security.text(data, "due_date", 10, required=True)) if payment_mode != "installments" else None
+    recurring = data.get("is_recurring", payment_mode == "recurring")
     if not isinstance(recurring, (bool, int)) or recurring not in (False, True, 0, 1):
         raise BadRequest("ערך החזרתיות אינו תקין")
     is_recurring = int(bool(recurring))
@@ -418,28 +427,17 @@ def api_bill_add():
     if not category:
         category = "אחר"
 
-    schedule = data.get("installments")
-    if schedule is not None:
-        if is_recurring:
-            raise BadRequest("Installments cannot also repeat indefinitely")
-        schedule = payments.validate(schedule)
-    else:
-        schedule = [dict(amount=amount, due_date=due_date)]
-    conn = db.get_conn()
-    ids = []
-    try:
-        with conn:
-            for payment in schedule:
-                cur = conn.execute(
-                    "INSERT INTO bills (user_id,supplier,amount,category,due_date,is_paid,"
-                    "is_recurring,recurrence,image_path,source) VALUES (?,?,?,?,?,0,?,?,?,?)",
-                    (session["user_id"], supplier, payment["amount"], category, payment["due_date"],
-                     is_recurring, recurrence, image_path, source))
-                ids.append(cur.lastrowid)
-    finally:
-        conn.close()
-    return jsonify(ok=True, bill_id=ids[0], bill_ids=ids, category=category)
+    if payment_mode == "installments":
+        return jsonify(**payment_plans.create(session["user_id"], supplier, category, image_path, source, data))
 
+    bill_id = db.query(
+        "INSERT INTO bills (user_id, supplier, amount, category, due_date, "
+        "is_paid, is_recurring, recurrence, image_path, source, recurrence_day) "
+        "VALUES (%s, %s, %s, %s, %s, 0, %s, %s, %s, %s, %s)",
+        (session["user_id"], supplier, amount, category, due_date,
+         is_recurring, recurrence, image_path, source, date.fromisoformat(due_date).day if is_recurring else None),
+    )
+    return jsonify(ok=True, bill_id=bill_id, category=category)
 
 
 @app.route("/api/bills/<int:bill_id>/pay", methods=["POST"])
@@ -473,12 +471,15 @@ def api_bill_pay(bill_id):
 
             next_bill_id = None
 
-            if row["is_recurring"]:
+            if row["is_recurring"] and not row["payment_plan_id"]:
                 months = 12 if row["recurrence"] == "yearly" else 1
 
                 try:
                     due = date.fromisoformat(str(row["due_date"])[:10])
                     next_due = add_months(due, months)
+                    from calendar import monthrange
+                    anchor_day = row["recurrence_day"] or due.day
+                    next_due = next_due.replace(day=min(anchor_day, monthrange(next_due.year, next_due.month)[1]))
                 except (ValueError, OverflowError):
                     return jsonify(
                         ok=False,
@@ -489,9 +490,9 @@ def api_bill_pay(bill_id):
                     """
                     INSERT INTO bills (
                         user_id, supplier, amount, category, due_date,
-                        is_paid, is_recurring, recurrence, source
+                        is_paid, is_recurring, recurrence, source, recurrence_day
                     )
-                    VALUES (?, ?, ?, ?, ?, 0, 1, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, 0, 1, ?, ?, ?)
                     """,
                     (
                         row["user_id"],
@@ -501,6 +502,7 @@ def api_bill_pay(bill_id):
                         next_due.isoformat(),
                         row["recurrence"],
                         row["source"],
+                        anchor_day,
                     ),
                 )
                 next_bill_id = cursor.lastrowid
@@ -571,7 +573,7 @@ def api_bills_by_month():
     if not 1 <= month <= 12 or not 1 <= year <= 9999:
         raise BadRequest("שנה או חודש אינם תקינים")
     rows = db.query(
-        "SELECT bill_id, supplier, amount, category, due_date, is_paid "
+        "SELECT bill_id, supplier, amount, category, due_date, is_paid, payment_plan_id, installment_number, installment_count "
         "FROM bills WHERE user_id=%s ORDER BY due_date ASC",
         (session["user_id"],), fetch=True,
     )
@@ -666,7 +668,7 @@ def api_bill_scan():
         ocr_error=parsed.get("error"),
         ocr_notice=parsed.get("notice"),
         document_type=parsed.get("document_type", "unknown"),
-        installments=parsed.get("installments", []),
+        payment_plan=parsed.get("payment_plan"),
     )
 
 
