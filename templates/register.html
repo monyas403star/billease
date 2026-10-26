@@ -10,7 +10,14 @@
       <p class="muted">{{ t("לוקח פחות מדקה") }}</p>
     </div>
 
+    <form method="post" action="{{ url_for('change_language') }}" id="language-form" class="language-buttons">
+      <input type="hidden" name="next" value="/register">
+      {% for code, label in languages.items() %}
+      <button type="submit" name="language" value="{{ code }}" lang="{{ code }}" class="btn {% if code == locale %}primary{% endif %}" aria-pressed="{{ 'true' if code == locale else 'false' }}">{{ label }}</button>
+      {% endfor %}
+    </form>
     <form id="register-form" class="form">
+      <input type="hidden" name="language" value="{{ locale }}">
       <label>{{ t("תעודת זהות") }}</label>
       <input name="user_id" type="text" required placeholder="123456789">
 
@@ -37,5 +44,5 @@
 </main>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/register.js', v='languages1') }}"></script>
+<script src="{{ url_for('static', filename='js/register.js', v='payments2') }}"></script>
 {% endblock %}

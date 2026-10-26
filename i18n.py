@@ -1,15 +1,25 @@
-"""Request-scoped UI language. Stored in a cookie; business data stays unchanged."""
+"""Request-scoped UI language. Stored in the account, with a cookie fallback before sign-in."""
 import json
 import re
 from pathlib import Path
-from flask import request, redirect, url_for, has_request_context
+from flask import request, redirect, url_for, has_request_context, session, g
+import db
 
 CATALOG = json.loads(Path(__file__).with_name('translations.json').read_text(encoding='utf-8'))
 LANGUAGES = {'he': 'עברית', 'ar': 'العربية', 'en': 'English'}
 
 
 def language():
-    value = request.cookies.get('billease_language', 'he') if has_request_context() else 'he'
+    if not has_request_context():
+        return 'he'
+    if hasattr(g, 'ui_language'):
+        return g.ui_language
+    value = request.cookies.get('billease_language', 'he')
+    if session.get('user_id'):
+        row = db.query('SELECT language FROM users WHERE user_id=?', (session['user_id'],), fetch=True, one=True)
+        if row:
+            value = row['language']
+    g.ui_language = value if value in LANGUAGES else 'he'
     return value if value in LANGUAGES else 'he'
 
 
@@ -41,6 +51,9 @@ def setup(app):
         locale = request.form.get('language')
         if locale not in LANGUAGES:
             return ('Invalid language', 400)
+        if session.get('user_id'):
+            db.query('UPDATE users SET language=? WHERE user_id=?', (locale, session['user_id']))
+        g.ui_language = locale
         target = request.form.get('next', '/')
         if not target.startswith('/') or target.startswith('//') or '\\' in target or any(ord(c) < 32 for c in target):
             target = '/'

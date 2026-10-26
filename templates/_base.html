@@ -16,24 +16,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css', v='languages1') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css', v='payments2') }}">
   <link rel="icon" href="{{ url_for('static', filename='img/logo.svg') }}">
 </head>
 <body class="{% block bodyclass %}{% endblock %}">
-  <div class="language-bar">
-    <form method="post" action="{{ url_for('change_language') }}" id="language-form" class="language-form">
-      <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
-      <label for="language-select">{{ t('Language') }}</label>
-      <select id="language-select" name="language" aria-label="{{ t('Language') }}">
-        {% for code, label in languages.items() %}<option value="{{ code }}" lang="{{ code }}" {% if code == locale %}selected{% endif %}>{{ label }}</option>{% endfor %}
-      </select>
-      <button type="submit" class="language-apply">{{ t('שמירה') }}</button>
-    </form>
-  </div>
   {% block content %}{% endblock %}
   <script id="billease-i18n" type="application/json">{{ {'locale': locale, 'messages': ui_catalog}|tojson }}</script>
-  <script src="{{ url_for('static', filename='js/i18n.js', v='languages1') }}"></script>
-  <script src="{{ url_for('static', filename='js/app.js', v='languages1') }}"></script>
+  <script src="{{ url_for('static', filename='js/i18n.js', v='payments2') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js', v='payments2') }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

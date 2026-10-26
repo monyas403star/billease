@@ -44,6 +44,17 @@
         <label>{{ t("תאריך פירעון") }}</label>
         <input name="due_date" type="date" required>
 
+        <fieldset>
+          <legend>{{ t('Payment schedule') }}</legend>
+          <label><input type="checkbox" id="installment-toggle"> {{ t('Pay in installments') }}</label>
+          <div id="installment-fields" class="hidden">
+            <label for="payment-count">{{ t('Number of monthly payments') }}</label>
+            <input id="payment-count" type="number" min="1" max="120" value="1">
+            <button type="button" id="generate-payments" class="btn">{{ t('Build monthly schedule') }}</button>
+            <p class="muted">{{ t('Use the amount of one payment and the first payment date above. Review each payment before saving.') }}</p>
+            <div id="payment-rows"></div>
+          </div>
+        </fieldset>
         <div class="check-row">
           <label class="check">
             <input type="checkbox" id="rec-toggle" name="is_recurring">
@@ -63,5 +74,5 @@
 </main>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/add_bill.js', v='languages1') }}"></script>
+<script src="{{ url_for('static', filename='js/add_bill.js', v='payments2') }}"></script>
 {% endblock %}

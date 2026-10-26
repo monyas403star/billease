@@ -521,3 +521,5 @@ input[type="email"], input[type="tel"], input[type="number"], input[type="date"]
   .row-form { flex-direction: column; align-items: stretch; }
   .row-form select, .row-form input, .row-form button { width: 100%; flex: auto; }
 }
+
+.language-buttons{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.payment-row{display:flex;gap:8px;margin:8px 0}.payment-row input{min-width:0;flex:1}
