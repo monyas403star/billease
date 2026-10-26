@@ -3,6 +3,10 @@ const form = document.getElementById("login-form");
 const msg = document.getElementById("login-msg");
 
 let loggingIn = false;
+let languageChosen = false;
+form.querySelectorAll('input[name="preferred_language"]').forEach(button => {
+  button.addEventListener('change', () => { languageChosen = true; });
+});
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -13,6 +17,7 @@ form.addEventListener("submit", async (e) => {
 
   try {
     const data = formToObj(form);
+    if (!languageChosen) delete data.preferred_language;
     const res = await apiSend("/api/login", "POST", data);
 
     if (!res.ok) {

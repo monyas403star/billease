@@ -48,7 +48,7 @@ document.addEventListener('invalid', event => {
 }, true);
 
 document.addEventListener('DOMContentLoaded', () => {
-  const register = document.getElementById('register-form');
+  const register = document.getElementById('register-form') || document.getElementById('login-form');
   if(register && uiSettings.catalogs) {
     for(const button of register.querySelectorAll('input[name="preferred_language"]')) {
       button.addEventListener('change', () => {
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.lang=button.value;
         document.documentElement.dir=button.value==='en'?'ltr':'rtl';
         for(const node of document.querySelectorAll('[data-i18n]'))node.textContent=t(node.dataset.i18n);
-        document.title=t('הרשמה - BillEase');
+        document.title=t(register.id==='login-form'?'התחברות - BillEase':'הרשמה - BillEase');
       });
     }
   }
