@@ -103,6 +103,18 @@ class LanguagePayments(unittest.TestCase):
         self.assertEqual(db.query('SELECT language FROM users WHERE user_id=?',('switch-user',),fetch=True,one=True)['language'],'en')
         self.assertIn('<html lang="en" dir="ltr">',self.client.get('/dashboard').text)
 
+    def test_explicit_shekel_symbols_and_amount_formats(self):
+        for currency in ('ILS', 'NIS', '₪', 'ש״ח', 'ש"ח', 'שח', 'شيكل', 'شيقل'):
+            with self.subTest(currency=currency):
+                result=ocr._validated(dict(document_type='invoice', currency=currency,
+                    amount={'value':'1,234.50','evidence':'Total 1,234.50'}, installments=[]))
+                self.assertEqual(result['amount'],1234.50)
+        self.assertTrue(ocr._is_ils(None, {'evidence':'לתשלום 120.00 ש״ח'}))
+        self.assertFalse(ocr._is_ils(None, {'evidence':'Total 120.00'}))
+        self.assertFalse(ocr._is_ils('USD', {'evidence':'120 ₪'}))
+        self.assertIsNone(ocr._amount_value('1,23'))
+        self.assertIsNone(ocr._amount_value('1,234,50'))
+
 
 if __name__ == '__main__':
     unittest.main()
