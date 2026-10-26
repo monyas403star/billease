@@ -4,7 +4,7 @@ const tbody = document.getElementById("upcoming-body");
 async function loadDashboard() {
   const res = await apiGet("/api/bills");
   if (!res.ok) {
-    tbody.innerHTML = '<tr><td colspan="5" class="muted">לא ניתן לטעון חשבונות</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="5" class="muted">${t("לא ניתן לטעון חשבונות")}</td></tr>`;
     return;
   }
   const bills = res.bills;
@@ -28,16 +28,16 @@ async function loadDashboard() {
 
   if (upcoming.length === 0) {
     tbody.innerHTML = `<tr><td colspan="5">
-      <div class="empty"><span class="emoji">🎉</span>אין חשבונות פתוחים. כל הכבוד!</div>
+      <div class="empty"><span class="emoji">🎉</span>${t("אין חשבונות פתוחים. כל הכבוד!")}</div>
     </td></tr>`;
     return;
   }
   tbody.innerHTML = upcoming.map(b => `
     <tr>
-      <td>${b.supplier}</td>
+      <td>${escapeHtml(b.supplier || "")}</td>
       <td>${fmtMoney(b.amount)}</td>
-      <td>${b.category || ""}</td>
-      <td>${b.due_date}</td>
+      <td>${escapeHtml(categoryLabel(b.category || ""))}</td>
+      <td>${escapeHtml(fmtDate(b.due_date))}</td>
       <td>${statusBadge(b)}</td>
     </tr>
   `).join("");

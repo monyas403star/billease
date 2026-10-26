@@ -28,7 +28,7 @@ function showMsg(el, text, ok) {
 }
 
 function fmtMoney(n) {
-  return Number(n).toFixed(2) + " ₪";
+  return new Intl.NumberFormat(uiLocale(), {style: "currency", currency: "ILS"}).format(Number(n));
 }
 
 function daysUntil(dateStr) {
@@ -40,11 +40,11 @@ function daysUntil(dateStr) {
 }
 
 function statusBadge(bill) {
-  if (bill.is_paid) return '<span class="badge ok">שולם</span>';
+  if (bill.is_paid) return `<span class="badge ok">${t("שולם")}</span>`;
   const days = daysUntil(bill.due_date);
-  if (days < 0) return '<span class="badge late">באיחור</span>';
-  if (days <= 7) return '<span class="badge warn">לתשלום בקרוב</span>';
-  return '<span class="badge open">פתוח</span>';
+  if (days < 0) return `<span class="badge late">${t("באיחור")}</span>`;
+  if (days <= 7) return `<span class="badge warn">${t("לתשלום בקרוב")}</span>`;
+  return `<span class="badge open">${t("פתוח")}</span>`;
 }
 
 // mobile nav toggle

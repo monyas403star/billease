@@ -16,11 +16,11 @@ async function load() {
 
     const catBody = document.getElementById("adm-cats");
     if (stats.by_category.length === 0) {
-      catBody.innerHTML = '<tr><td colspan="3" class="muted">אין נתונים</td></tr>';
+      catBody.innerHTML = `<tr><td colspan="3" class="muted">${t("אין נתונים")}</td></tr>`;
     } else {
       catBody.innerHTML = stats.by_category.map(r => `
         <tr>
-          <td>${r.category || "(ללא)"}</td>
+          <td>${escapeHtml(categoryLabel(r.category) || t("(ללא)"))}</td>
           <td>${r.cnt}</td>
           <td>${fmtMoney(r.total)}</td>
         </tr>`).join("");
@@ -31,27 +31,27 @@ async function load() {
     const tbody = document.getElementById("adm-users-tbl");
     tbody.innerHTML = users.users.map(u => `
       <tr>
-        <td>${u.user_id}</td>
-        <td>${u.full_name}</td>
-        <td>${u.email}</td>
+        <td>${escapeHtml(u.user_id || "")}</td>
+        <td>${escapeHtml(u.full_name || "")}</td>
+        <td>${escapeHtml(u.email || "")}</td>
         <td>${u.bill_count}</td>
-        <td>${u.created_at}</td>
-        <td>${u.is_admin ? '<span class="badge ok">מנהל</span>' : ""}</td>
+        <td>${escapeHtml(u.created_at || "")}</td>
+        <td>${u.is_admin ? `<span class="badge ok">${t("מנהל")}</span>` : ""}</td>
       </tr>`).join("");
   }
 
   if (log.ok) {
     const tbody = document.getElementById("adm-ocr-log");
     if (log.log.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="muted">אין רשומות</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="5" class="muted">${t("אין רשומות")}</td></tr>`;
     } else {
       tbody.innerHTML = log.log.map(r => `
         <tr>
           <td>${r.created_at}</td>
           <td>${r.user_id}</td>
           <td><a href="/uploads/${r.image_path}" target="_blank">${r.image_path}</a></td>
-          <td>${r.parsed_ok ? '<span class="badge ok">הצליח</span>' : '<span class="badge late">נכשל</span>'}</td>
-          <td>${r.note || ""}</td>
+          <td>${r.parsed_ok ? `<span class="badge ok">${t("הצליח")}</span>` : `<span class="badge late">${t("נכשל")}</span>`}</td>
+          <td>${escapeHtml(t(r.note || ""))}</td>
         </tr>`).join("");
     }
   }

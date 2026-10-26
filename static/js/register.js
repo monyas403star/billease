@@ -7,11 +7,11 @@ form.addEventListener("submit", async (e) => {
   const data = formToObj(form);
   const res = await apiSend("/api/register", "POST", data);
   if (res.ok) {
-    showMsg(msg, "החשבון נפתח! מעבר ללוח הבקרה...", true);
+    showMsg(msg, t("החשבון נפתח! מעבר ללוח הבקרה..."), true);
     setTimeout(() => {
       window.location.href = res.redirect || "/dashboard";
     }, 1200);
   } else {
-    showMsg(msg, res.error || "ההרשמה נכשלה", false);
+    showMsg(msg, res.error || t("ההרשמה נכשלה"), false);
   }
 });

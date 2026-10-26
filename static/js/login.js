@@ -9,21 +9,21 @@ form.addEventListener("submit", async (e) => {
   if (loggingIn) return;
 
   loggingIn = true;
-  showMsg(msg, "מתחבר...", true);
+  showMsg(msg, t("מתחבר..."), true);
 
   try {
     const data = formToObj(form);
     const res = await apiSend("/api/login", "POST", data);
 
     if (!res.ok) {
-      showMsg(msg, res.error || "ההתחברות נכשלה", false);
+      showMsg(msg, res.error || t("ההתחברות נכשלה"), false);
       return;
     }
 
     const profile = await apiGet("/api/profile");
 
     if (!profile.ok || !profile.user) {
-      showMsg(msg, "לא ניתן לטעון את פרטי החשבון. נסו שוב.", false);
+      showMsg(msg, t("לא ניתן לטעון את פרטי החשבון. נסו שוב."), false);
       return;
     }
 
@@ -31,13 +31,13 @@ form.addEventListener("submit", async (e) => {
 
     showMsg(
       msg,
-      isAdmin ? "מעבר למסך הניהול..." : "מעבר לחשבון שלך...",
+      isAdmin ? t("מעבר למסך הניהול...") : t("מעבר לחשבון שלך..."),
       true
     );
 
     window.location.href = isAdmin ? "/admin" : "/dashboard";
   } catch (error) {
-    showMsg(msg, "שגיאת תקשורת. נסו שוב.", false);
+    showMsg(msg, t("שגיאת תקשורת. נסו שוב."), false);
   } finally {
     loggingIn = false;
   }

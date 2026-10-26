@@ -33,7 +33,7 @@ async function loadCategories() {
     catSelect.replaceChildren();
 
     for (const category of res.categories) {
-      catSelect.add(new Option(category, category));
+      catSelect.add(new Option(categoryLabel(category), category));
     }
 
     if (res.categories.includes(previous)) {
@@ -44,7 +44,7 @@ async function loadCategories() {
 
     return true;
   } catch (error) {
-    showMsg(saveMsg, "לא ניתן לטעון קטגוריות. נסו לרענן.", false);
+    showMsg(saveMsg, t("לא ניתן לטעון קטגוריות. נסו לרענן."), false);
     return false;
   }
 }
@@ -87,7 +87,7 @@ billForm.supplier.addEventListener("input", () => {
         if (exists) {
           catSelect.value = res.category;
           catHint.textContent =
-            `הקטגוריה ${res.category} סומנה אוטומטית לפי שם הספק`;
+            t("הקטגוריה {category} סומנה אוטומטית לפי שם הספק", {category: categoryLabel(res.category)});
         }
       }
     } catch (error) {
@@ -129,7 +129,7 @@ scanForm.addEventListener("submit", async (event) => {
   const file = scanFile.files[0];
 
   if (!file) {
-    showMsg(scanMsg, "בחרו תמונה לסריקה.", false);
+    showMsg(scanMsg, t("בחרו תמונה לסריקה."), false);
     return;
   }
 
@@ -156,7 +156,7 @@ scanForm.addEventListener("submit", async (event) => {
   clearTimeout(suggestTimer);
   suggestionVersion++;
 
-  showMsg(scanMsg, "סורק... נא להמתין.", true);
+  showMsg(scanMsg, t("סורק... נא להמתין."), true);
 
   try {
     const formData = new FormData();
@@ -169,19 +169,19 @@ scanForm.addEventListener("submit", async (event) => {
     });
 
     if (response.status === 401) {
-      showMsg(scanMsg, "יש להתחבר מחדש לפני הסריקה.", false);
+      showMsg(scanMsg, t("יש להתחבר מחדש לפני הסריקה."), false);
       return;
     }
 
     if (response.status === 413) {
-      showMsg(scanMsg, "התמונה גדולה מדי. בחרו תמונה קטנה יותר.", false);
+      showMsg(scanMsg, t("התמונה גדולה מדי. בחרו תמונה קטנה יותר."), false);
       return;
     }
 
     const res = await response.json();
 
     if (!response.ok || !res.ok) {
-      showMsg(scanMsg, res.error || "הסריקה נכשלה.", false);
+      showMsg(scanMsg, res.error || t("הסריקה נכשלה."), false);
       return;
     }
 
@@ -192,7 +192,7 @@ scanForm.addEventListener("submit", async (event) => {
     if (!res.ocr_available) {
       showMsg(
         scanMsg,
-        "התמונה נשמרה, אך מנוע הזיהוי אינו זמין. מלאו ידנית.",
+        t("התמונה נשמרה, אך מנוע הזיהוי אינו זמין. מלאו ידנית."),
         false
       );
       return;
@@ -201,7 +201,7 @@ scanForm.addEventListener("submit", async (event) => {
     if (res.ocr_error) {
       showMsg(
         scanMsg,
-        res.ocr_error || "לא ניתן לקרוא את התמונה. נסו שוב או מלאו ידנית.",
+        res.ocr_error || t("לא ניתן לקרוא את התמונה. נסו שוב או מלאו ידנית."),
         false
       );
       return;
@@ -230,7 +230,7 @@ scanForm.addEventListener("submit", async (event) => {
       if (exists) {
         catSelect.value = res.category;
         catHint.textContent =
-          `הקטגוריה ${res.category} סומנה אוטומטית`;
+          t("הקטגוריה {category} סומנה אוטומטית", {category: categoryLabel(res.category)});
       }
     }
 
@@ -244,14 +244,14 @@ scanForm.addEventListener("submit", async (event) => {
     showMsg(
       scanMsg,
       scanNotice || (complete
-        ? "הסריקה הסתיימה. בדקו ותקנו את הפרטים לפני השמירה."
-        : "זוהו פרטים חלקיים. השדות שלא זוהו נשארו ריקים; השלימו ובדקו לפני השמירה."),
+        ? t("הסריקה הסתיימה. בדקו ותקנו את הפרטים לפני השמירה.")
+        : t("זוהו פרטים חלקיים. השדות שלא זוהו נשארו ריקים; השלימו ובדקו לפני השמירה.")),
       complete && !scanNotice
     );
   } catch (error) {
     showMsg(
       scanMsg,
-      "לא התקבלה תשובה תקינה מהשרת. נסו שוב.",
+      t("לא התקבלה תשובה תקינה מהשרת. נסו שוב."),
       false
     );
   } finally {
@@ -267,7 +267,7 @@ billForm.addEventListener("submit", async (event) => {
   if (saving) return;
 
   if (scanning) {
-    showMsg(saveMsg, "המתינו לסיום הסריקה לפני השמירה.", false);
+    showMsg(saveMsg, t("המתינו לסיום הסריקה לפני השמירה."), false);
     return;
   }
 
@@ -290,7 +290,7 @@ billForm.addEventListener("submit", async (event) => {
     const res = await apiSend("/api/bills", "POST", data);
 
     if (!res.ok) {
-      showMsg(saveMsg, res.error || "השמירה נכשלה.", false);
+      showMsg(saveMsg, res.error || t("השמירה נכשלה."), false);
       return;
     }
 
@@ -298,7 +298,7 @@ billForm.addEventListener("submit", async (event) => {
 
     showMsg(
       saveMsg,
-      "החשבון נשמר! עובר לרשימת החשבונות...",
+      t("החשבון נשמר! עובר לרשימת החשבונות..."),
       true
     );
 
@@ -308,7 +308,7 @@ billForm.addEventListener("submit", async (event) => {
   } catch (error) {
     showMsg(
       saveMsg,
-      "לא התקבל אישור שמירה. בדקו ברשימת החשבונות לפני ניסיון נוסף.",
+      t("לא התקבל אישור שמירה. בדקו ברשימת החשבונות לפני ניסיון נוסף."),
       false
     );
   } finally {

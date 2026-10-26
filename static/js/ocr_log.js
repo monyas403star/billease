@@ -5,35 +5,35 @@ async function load() {
 
   const billsTbody = document.getElementById("ocr-bills");
   if (res.bills.length === 0) {
-    billsTbody.innerHTML = '<tr><td colspan="6" class="muted">עדיין אין חשבונות שנסרקו</td></tr>';
+    billsTbody.innerHTML = `<tr><td colspan="6" class="muted">${t("עדיין אין חשבונות שנסרקו")}</td></tr>`;
   } else {
     billsTbody.innerHTML = res.bills.map(b => `
       <tr>
         <td>${b.image_path
           ? `<a href="/uploads/${b.image_path}" target="_blank"><img class="thumb" src="/uploads/${b.image_path}" alt="thumb"></a>`
-          : '<span class="muted">אין</span>'}</td>
-        <td>${b.supplier || ""}</td>
+          : `<span class="muted">${t("אין")}</span>`}</td>
+        <td>${escapeHtml(b.supplier || "")}</td>
         <td>${fmtMoney(b.amount)}</td>
-        <td>${b.category || ""}</td>
-        <td>${b.due_date}</td>
+        <td>${escapeHtml(categoryLabel(b.category || ""))}</td>
+        <td>${escapeHtml(fmtDate(b.due_date))}</td>
         <td>${b.image_path
-          ? `<a class="link-btn" href="/uploads/${b.image_path}" target="_blank">פתיחה ←</a>`
+          ? `<a class="link-btn" href="/uploads/${b.image_path}" target="_blank">${t("פתיחה ←")}</a>`
           : ""}</td>
       </tr>`).join("");
   }
 
   const logTbody = document.getElementById("ocr-log");
   if (res.log.length === 0) {
-    logTbody.innerHTML = '<tr><td colspan="4" class="muted">אין רשומות בלוג</td></tr>';
+    logTbody.innerHTML = `<tr><td colspan="4" class="muted">${t("אין רשומות בלוג")}</td></tr>`;
   } else {
     logTbody.innerHTML = res.log.map(r => `
       <tr>
         <td>${r.created_at}</td>
         <td><a href="/uploads/${r.image_path}" target="_blank">${r.image_path}</a></td>
         <td>${r.parsed_ok
-          ? '<span class="badge ok">הצליח</span>'
-          : '<span class="badge late">נכשל</span>'}</td>
-        <td>${r.note || ""}</td>
+          ? `<span class="badge ok">${t("הצליח")}</span>`
+          : `<span class="badge late">${t("נכשל")}</span>`}</td>
+        <td>${escapeHtml(t(r.note || ""))}</td>
       </tr>`).join("");
   }
 }

@@ -17,10 +17,10 @@ form.addEventListener("submit", async (e) => {
   delete data.user_id;
   const res = await apiSend("/api/profile", "PUT", data);
   if (res.ok) {
-    showMsg(msg, "נשמר!", true);
+    showMsg(msg, t("נשמר!"), true);
     form.password.value = "";
   } else {
-    showMsg(msg, res.error || "השמירה נכשלה", false);
+    showMsg(msg, res.error || t("השמירה נכשלה"), false);
   }
 });
 

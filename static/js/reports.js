@@ -1,6 +1,5 @@
 // reports page - charts + budgets + month drill-down
-const MONTH_LABELS = ["ינו'","פבר'","מרץ","אפר'","מאי","יוני",
-                      "יולי","אוג'","ספט'","אוק'","נוב'","דצמ'"];
+const MONTH_LABELS = Array.from({length: 12}, (_, month) => new Intl.DateTimeFormat(uiLocale(), {month: 'short'}).format(new Date(2024, month, 1)));
 
 const yearInput = document.getElementById("year-input");
 const year2Input = document.getElementById("year2-input");
@@ -21,6 +20,11 @@ let catChart = null;
 let compareChart = null;
 let allBills = [];
 let currentYear = new Date().getFullYear();
+
+Chart.defaults.animation = false;
+Chart.defaults.locale = uiLocale();
+Chart.defaults.plugins.legend.rtl = uiSettings.locale !== "en";
+Chart.defaults.plugins.legend.textDirection = uiSettings.locale === "en" ? "ltr" : "rtl";
 
 Chart.defaults.font.family = '"Heebo", sans-serif';
 
@@ -45,7 +49,7 @@ async function loadReport() {
     data: {
       labels: MONTH_LABELS,
       datasets: [{
-        label: "הוצאות",
+        label: t("הוצאות"),
         data: summary.months,
         backgroundColor: "#4f46e5",
         borderRadius: 6,
@@ -73,7 +77,7 @@ async function loadReport() {
                   "#ec4899","#6b7280"];
   catChart = new Chart(catCtx, {
     type: "doughnut",
-    data: { labels: catNames, datasets: [{ data: catValues, backgroundColor: colors }] },
+    data: { labels: catNames.map(categoryLabel), datasets: [{ data: catValues, backgroundColor: colors }] },
     options: { responsive: true, maintainAspectRatio: false }
   });
 
@@ -102,20 +106,20 @@ async function loadReport() {
 }
 
 async function openDrill(year, month) {
-  drillTitle.textContent = `חשבונות לחודש ${MONTH_LABELS[month - 1]} ${year}`;
-  drillBody.innerHTML = '<tr><td colspan="5" class="muted">טוען...</td></tr>';
+  drillTitle.textContent = t("חשבונות לחודש {month} {year}", {month: MONTH_LABELS[month - 1], year});
+  drillBody.innerHTML = `<tr><td colspan="5" class="muted">${t("טוען...")}</td></tr>`;
   modal.classList.remove("hidden");
   const res = await apiGet(`/api/bills/by-month?year=${year}&month=${month}`);
   if (!res.ok || res.bills.length === 0) {
-    drillBody.innerHTML = '<tr><td colspan="5" class="muted">אין חשבונות בחודש זה</td></tr>';
+    drillBody.innerHTML = `<tr><td colspan="5" class="muted">${t("אין חשבונות בחודש זה")}</td></tr>`;
     return;
   }
   drillBody.innerHTML = res.bills.map(b => `
     <tr>
-      <td>${b.supplier}</td>
+      <td>${escapeHtml(b.supplier || "")}</td>
       <td>${fmtMoney(b.amount)}</td>
-      <td>${b.category || ""}</td>
-      <td>${b.due_date}</td>
+      <td>${escapeHtml(categoryLabel(b.category || ""))}</td>
+      <td>${escapeHtml(fmtDate(b.due_date))}</td>
       <td>${statusBadge(b)}</td>
     </tr>`).join("");
 }
@@ -131,7 +135,7 @@ document.addEventListener("keydown", (e) => {
 async function loadCategoriesForBudget() {
   const res = await apiGet("/api/categories");
   if (res.ok) {
-    budCat.innerHTML = res.categories.map(c => `<option value="${c}">${c}</option>`).join("");
+    budCat.replaceChildren(...res.categories.map(c => new Option(categoryLabel(c), c)));
   }
 }
 
@@ -139,7 +143,7 @@ async function loadBudgets() {
   const res = await apiGet("/api/budgets");
   if (!res.ok) return;
   if (res.budgets.length === 0) {
-    budgetBody.innerHTML = '<tr><td colspan="5" class="muted">לא הוגדרו תקציבים</td></tr>';
+    budgetBody.innerHTML = `<tr><td colspan="5" class="muted">${t("לא הוגדרו תקציבים")}</td></tr>`;
     return;
   }
   const now = new Date();
@@ -154,16 +158,16 @@ async function loadBudgets() {
       .reduce((s, x) => s + x.amount, 0);
     const over = spent > b.monthly_limit;
     const near = !over && spent > b.monthly_limit * 0.8;
-    const badge = over ? '<span class="badge late">חריגה</span>'
-                  : near ? '<span class="badge warn">קרוב לתקרה</span>'
-                  : '<span class="badge ok">בסדר</span>';
+    const badge = over ? `<span class="badge late">${t("חריגה")}</span>`
+                  : near ? `<span class="badge warn">${t("קרוב לתקרה")}</span>`
+                  : `<span class="badge ok">${t("בסדר")}</span>`;
     return `
       <tr>
-        <td>${b.category}</td>
+        <td>${escapeHtml(categoryLabel(b.category))}</td>
         <td>${fmtMoney(b.monthly_limit)}</td>
         <td>${fmtMoney(spent)}</td>
         <td>${badge}</td>
-        <td><button class="btn small danger" data-bdel="${b.category}">מחיקה</button></td>
+        <td><button class="btn small danger" data-bdel="${escapeHtml(b.category)}">${t("מחיקה")}</button></td>
       </tr>`;
   }).join("");
 }
@@ -181,7 +185,7 @@ budgetForm.addEventListener("submit", async (e) => {
 budgetBody.addEventListener("click", async (e) => {
   const cat = e.target.getAttribute("data-bdel");
   if (!cat) return;
-  if (!confirm("למחוק את התקציב לקטגוריה זו?")) return;
+  if (!confirm(t("למחוק את התקציב לקטגוריה זו?"))) return;
   await apiSend(`/api/budgets/${encodeURIComponent(cat)}`, "DELETE");
   loadBudgets();
 });
