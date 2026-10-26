@@ -78,7 +78,7 @@ def setup(app):
         locale = language()
         return dict(t=translate, locale=locale, text_direction='ltr' if locale == 'en' else 'rtl',
                     ui_catalog=CATALOG[locale], languages=LANGUAGES,
-                    ui_catalogs=CATALOG if request.endpoint == 'register_page' else None)
+                    ui_catalogs=CATALOG if request.endpoint in ('register_page', 'root') else None)
 
     @app.post('/language')
     def change_language():

@@ -277,6 +277,9 @@ def api_register():
 @app.route("/api/login", methods=["POST"])
 def api_login():
     data = security.json_object(request)
+    selected_language = i18n.parse_language(data["preferred_language"]) if "preferred_language" in data else None
+    if selected_language:
+        i18n.use_language(selected_language)
     user_id = security.text(data, "user_id", 64, required=True)
     pw = security.password(data, "password")
     if not security.rate_allowed("login", user_id, 20):
@@ -291,8 +294,11 @@ def api_login():
     session.clear()
     session.update(user_id=user_id, full_name=row["full_name"], auth_version=security.version(user_id))
     scheduler.wake()
-    i18n.use_language(row["preferred_language"])
-    return jsonify(ok=True, name=row["full_name"], language=row["preferred_language"])
+    locale = selected_language or row["preferred_language"]
+    if selected_language:
+        db.query("UPDATE users SET preferred_language=? WHERE user_id=?", (locale, user_id))
+    i18n.use_language(locale)
+    return jsonify(ok=True, name=row["full_name"], language=locale)
 
 
 @app.route("/api/recover/request", methods=["POST"])
