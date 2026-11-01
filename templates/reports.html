@@ -45,7 +45,14 @@
     </div>
     <div class="card">
       <h2>{{ t("לפי קטגוריה") }}</h2>
-      <div class="chart-box"><canvas id="cat-chart"></canvas></div>
+      <div class="chart-box"><canvas id="cat-chart" role="img" aria-label="{{ t('Category shares of annual bills') }}"></canvas></div>
+      <p class="muted">{{ t('Percentages show each category’s share of the selected year’s total. Small slices are listed below. Figures may differ slightly due to rounding.') }}</p>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>{{ t('קטגוריה') }}</th><th>{{ t('סכום') }}</th><th>{{ t('Share of total') }}</th></tr></thead>
+          <tbody id="category-share-body" aria-live="polite"></tbody>
+        </table>
+      </div>
     </div>
   </section>
 
@@ -92,5 +99,5 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/insights.js', v='business1') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="{{ url_for('static', filename='js/reports.js', v='business1') }}"></script>
+<script src="{{ url_for('static', filename='js/reports.js', v='pie1') }}"></script>
 {% endblock %}
