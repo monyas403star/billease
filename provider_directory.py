@@ -10,6 +10,10 @@ CATEGORIES = {
     'insurance': 'Insurance providers', 'health': 'Health funds', 'transport': 'Tolls and parking',
     'government': 'Government fees and services', 'education': 'Universities and tuition',
     'subscriptions': 'Digital subscriptions',
+    'banking': 'Banks and account services', 'credit_cards': 'Credit card companies',
+    'electronics': 'Electronics and appliance stores', 'home_retail': 'Furniture and home improvement',
+    'retail': 'Retail and pharmacies', 'public_transport': 'Public transport and travel cards',
+    'travel': 'Airlines and travel',
 }
 CATALOG_PATH = Path(__file__).with_name('provider_catalog.json')
 

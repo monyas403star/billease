@@ -901,6 +901,821 @@
       ],
       "source_url": "https://www.disneyplus.com/",
       "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "hapoalim",
+      "category": "banking",
+      "name": {
+        "he": "בנק הפועלים",
+        "ar": "بنك هبوعليم",
+        "en": "Bank Hapoalim"
+      },
+      "url": "https://www.bankhapoalim.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "פועלים",
+        "هبوعليم",
+        "بنك العمال"
+      ],
+      "source_url": "https://www.bankhapoalim.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "leumi-bank",
+      "category": "banking",
+      "name": {
+        "he": "בנק לאומי",
+        "ar": "بنك لئومي",
+        "en": "Bank Leumi"
+      },
+      "url": "https://www.leumi.co.il/he",
+      "kind": "official_site",
+      "aliases": [
+        "לאומי",
+        "ليئومي"
+      ],
+      "source_url": "https://www.leumi.co.il/he",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "discount",
+      "category": "banking",
+      "name": {
+        "he": "בנק דיסקונט",
+        "ar": "بنك ديسكونت",
+        "en": "Discount Bank"
+      },
+      "url": "https://www.discountbank.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "דיסקונט"
+      ],
+      "source_url": "https://www.discountbank.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "mizrahi",
+      "category": "banking",
+      "name": {
+        "he": "בנק מזרחי טפחות",
+        "ar": "بنك مزراحي طفحوت",
+        "en": "Mizrahi Tefahot Bank"
+      },
+      "url": "https://www.mizrahi-tefahot.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "מזרחי",
+        "טפחות"
+      ],
+      "source_url": "https://www.mizrahi-tefahot.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "fibi",
+      "category": "banking",
+      "name": {
+        "he": "הבנק הבינלאומי",
+        "ar": "بنك هبينلئومي",
+        "en": "First International Bank"
+      },
+      "url": "https://www.fibi.co.il/private/",
+      "kind": "official_site",
+      "aliases": [
+        "בינלאומי",
+        "هبينلؤومي",
+        "FIBI"
+      ],
+      "source_url": "https://www.fibi.co.il/private/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "yahav",
+      "category": "banking",
+      "name": {
+        "he": "בנק יהב",
+        "ar": "بنك ياهف",
+        "en": "Bank Yahav"
+      },
+      "url": "https://www.bank-yahav.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "יהב"
+      ],
+      "source_url": "https://www.bank-yahav.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "jerusalem-bank",
+      "category": "banking",
+      "name": {
+        "he": "בנק ירושלים",
+        "ar": "بنك القدس",
+        "en": "Bank of Jerusalem"
+      },
+      "url": "https://www.bankjerusalem.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "ירושלים"
+      ],
+      "source_url": "https://www.bankjerusalem.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "max-card",
+      "category": "credit_cards",
+      "name": {
+        "he": "MAX",
+        "ar": "ماكس",
+        "en": "MAX"
+      },
+      "url": "https://www.max.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "מקס",
+        "לאומי קארד",
+        "Leumi Card"
+      ],
+      "source_url": "https://www.max.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "cal-card",
+      "category": "credit_cards",
+      "name": {
+        "he": "כאל",
+        "ar": "كال",
+        "en": "CAL"
+      },
+      "url": "https://www.cal-online.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "ויזה כאל",
+        "Visa CAL",
+        "بطاقة كال"
+      ],
+      "source_url": "https://www.cal-online.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "isracard",
+      "category": "credit_cards",
+      "name": {
+        "he": "ישראכרט",
+        "ar": "يسرا كارت",
+        "en": "Isracard"
+      },
+      "url": "https://www.isracard.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "إسرا كارد",
+        "ישרא כרט"
+      ],
+      "source_url": "https://www.isracard.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "ksp",
+      "category": "electronics",
+      "name": {
+        "he": "KSP",
+        "ar": "كي إس بي",
+        "en": "KSP"
+      },
+      "url": "https://ksp.co.il/web/",
+      "kind": "official_site",
+      "aliases": [
+        "קיי אס פי",
+        "מחשבים"
+      ],
+      "source_url": "https://ksp.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "ivory",
+      "category": "electronics",
+      "name": {
+        "he": "אייבורי",
+        "ar": "إيفوري",
+        "en": "Ivory"
+      },
+      "url": "https://www.ivory.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "איבורי",
+        "ايفوري",
+        "מחשבים"
+      ],
+      "source_url": "https://www.ivory.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "bug",
+      "category": "electronics",
+      "name": {
+        "he": "באג",
+        "ar": "باغ",
+        "en": "BUG"
+      },
+      "url": "https://www.bug.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "מחשבים",
+        "حاسوب"
+      ],
+      "source_url": "https://www.bug.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "shekem",
+      "category": "electronics",
+      "name": {
+        "he": "שקם אלקטריק",
+        "ar": "شيكم إلكتريك",
+        "en": "Shekem Electric"
+      },
+      "url": "https://www.shekem-electric.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "שקם",
+        "أجهزة كهربائية"
+      ],
+      "source_url": "https://www.shekem-electric.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "payngo",
+      "category": "electronics",
+      "name": {
+        "he": "מחסני חשמל",
+        "ar": "مخسني حشمال",
+        "en": "Mahsanei Hashmal / Payngo"
+      },
+      "url": "https://www.payngo.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "מחסני",
+        "أجهزة كهربائية"
+      ],
+      "source_url": "https://www.payngo.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "alm",
+      "category": "electronics",
+      "name": {
+        "he": "א.ל.מ",
+        "ar": "إيه إل إم",
+        "en": "ALM"
+      },
+      "url": "https://www.alm.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "אלמ",
+        "אל מ",
+        "أجهزة كهربائية"
+      ],
+      "source_url": "https://www.alm.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "big-electric",
+      "category": "electronics",
+      "name": {
+        "he": "ביג אלקטריק",
+        "ar": "بيغ إلكتريك",
+        "en": "Big Electric"
+      },
+      "url": "https://bigelectric.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "ביג אלקטריק קובי",
+        "ביג אלקטריק קובי בעמ",
+        "ביגאלקטריק",
+        "بיג الكتريك"
+      ],
+      "source_url": "https://www.bigelectric.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "ikea",
+      "category": "home_retail",
+      "name": {
+        "he": "IKEA / איקאה",
+        "ar": "إيكيا",
+        "en": "IKEA"
+      },
+      "url": "https://www.ikea.com/il/he/",
+      "kind": "official_site",
+      "aliases": [
+        "איקאה",
+        "اثاث",
+        "أثاث"
+      ],
+      "source_url": "https://www.ikea.com/il/he/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "home-center",
+      "category": "home_retail",
+      "name": {
+        "he": "הום סנטר",
+        "ar": "هوم سنتر",
+        "en": "Home Center"
+      },
+      "url": "https://www.homecenter.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "هومسينتر",
+        "בית",
+        "صيانة"
+      ],
+      "source_url": "https://www.homecenter.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "shufersal",
+      "category": "retail",
+      "name": {
+        "he": "שופרסל",
+        "ar": "شوفرسال",
+        "en": "Shufersal"
+      },
+      "url": "https://www.shufersal.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "סופרמרקט",
+        "سوبرماركت"
+      ],
+      "source_url": "https://www.shufersal.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "rami-levy-shop",
+      "category": "retail",
+      "name": {
+        "he": "רמי לוי",
+        "ar": "رامي ليفي",
+        "en": "Rami Levy"
+      },
+      "url": "https://www.rami-levy.co.il/he",
+      "kind": "official_site",
+      "aliases": [
+        "סופרמרקט",
+        "سوبرماركت"
+      ],
+      "source_url": "https://www.rami-levy.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "super-pharm",
+      "category": "retail",
+      "name": {
+        "he": "סופר-פארם",
+        "ar": "سوبر فارم",
+        "en": "Super-Pharm"
+      },
+      "url": "https://shop.super-pharm.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "סופר פארם",
+        "פארם",
+        "صيدلية"
+      ],
+      "source_url": "https://www.super-pharm.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "netanya-city",
+      "category": "municipal",
+      "name": {
+        "he": "עיריית נתניה",
+        "ar": "بلدية نتانيا",
+        "en": "Netanya Municipality"
+      },
+      "url": "https://www.netanya.muni.il/",
+      "kind": "official_site",
+      "aliases": [
+        "נתניה",
+        "نتانيا"
+      ],
+      "source_url": "https://www.netanya.muni.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "ramat-gan-city",
+      "category": "municipal",
+      "name": {
+        "he": "עיריית רמת גן",
+        "ar": "بلدية رمات غان",
+        "en": "Ramat Gan Municipality"
+      },
+      "url": "https://www.ramat-gan.muni.il/",
+      "kind": "official_site",
+      "aliases": [
+        "רמת גן",
+        "رمات غان"
+      ],
+      "source_url": "https://www.ramat-gan.muni.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "herzliya-city",
+      "category": "municipal",
+      "name": {
+        "he": "עיריית הרצליה",
+        "ar": "بلدية هرتسليا",
+        "en": "Herzliya Municipality"
+      },
+      "url": "https://www.herzliya.muni.il/",
+      "kind": "official_site",
+      "aliases": [
+        "הרצליה",
+        "هرتسليا"
+      ],
+      "source_url": "https://www.herzliya.muni.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "raanana-city",
+      "category": "municipal",
+      "name": {
+        "he": "עיריית רעננה",
+        "ar": "بلدية رعنانا",
+        "en": "Raanana Municipality"
+      },
+      "url": "https://www.raanana.muni.il/",
+      "kind": "official_site",
+      "aliases": [
+        "רעננה",
+        "رعنانا"
+      ],
+      "source_url": "https://www.raanana.muni.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "ashdod-city",
+      "category": "municipal",
+      "name": {
+        "he": "עיריית אשדוד",
+        "ar": "بلدية أشدود",
+        "en": "Ashdod Municipality"
+      },
+      "url": "https://ashdod.muni.il/",
+      "kind": "official_site",
+      "aliases": [
+        "אשדוד",
+        "اشدود"
+      ],
+      "source_url": "https://ashdod.muni.il/he-il/תיק-תושב/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "rishon-city",
+      "category": "municipal",
+      "name": {
+        "he": "עיריית ראשון לציון – אזור אישי",
+        "ar": "بلدية ريشون لتسيون – المنطقة الشخصية",
+        "en": "Rishon LeZion Municipality – Personal Area"
+      },
+      "url": "https://my.rishonlezion.muni.il/",
+      "kind": "official_site",
+      "aliases": [
+        "ראשון לציון",
+        "ريشون لتسيون"
+      ],
+      "source_url": "https://my.rishonlezion.muni.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "technion",
+      "category": "education",
+      "name": {
+        "he": "הטכניון",
+        "ar": "التخنيون",
+        "en": "Technion"
+      },
+      "url": "https://www.technion.ac.il/",
+      "kind": "official_site",
+      "aliases": [
+        "שכר לימוד",
+        "اقساط",
+        "هندسة",
+        "טכניון"
+      ],
+      "source_url": "https://www.technion.ac.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "biu",
+      "category": "education",
+      "name": {
+        "he": "אוניברסיטת בר אילן",
+        "ar": "جامعة بار إيلان",
+        "en": "Bar-Ilan University"
+      },
+      "url": "https://www.biu.ac.il/",
+      "kind": "official_site",
+      "aliases": [
+        "בר אילן",
+        "אוניברסיטה",
+        "جامعة"
+      ],
+      "source_url": "https://www.biu.ac.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "ariel",
+      "category": "education",
+      "name": {
+        "he": "אוניברסיטת אריאל",
+        "ar": "جامعة أريئيل",
+        "en": "Ariel University"
+      },
+      "url": "https://www.ariel.ac.il/",
+      "kind": "official_site",
+      "aliases": [
+        "אריאל",
+        "אוניברסיטה",
+        "جامعة"
+      ],
+      "source_url": "https://www.ariel.ac.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "braude",
+      "category": "education",
+      "name": {
+        "he": "המכללה האקדמית להנדסה בראודה",
+        "ar": "كلية براودة للهندسة",
+        "en": "Braude College of Engineering"
+      },
+      "url": "https://w3.braude.ac.il/",
+      "kind": "official_site",
+      "aliases": [
+        "בראודה",
+        "כרמיאל",
+        "براوده",
+        "كرميئيل"
+      ],
+      "source_url": "https://w3.braude.ac.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "sce",
+      "category": "education",
+      "name": {
+        "he": "המכללה האקדמית להנדסה סמי שמעון",
+        "ar": "كلية سامي شمعون للهندسة",
+        "en": "SCE – Sami Shamoon College"
+      },
+      "url": "https://www.sce.ac.il/",
+      "kind": "official_site",
+      "aliases": [
+        "סמי שמעון",
+        "הנדסה",
+        "سامي شمعون"
+      ],
+      "source_url": "https://www.sce.ac.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "yvc",
+      "category": "education",
+      "name": {
+        "he": "המכללה האקדמית עמק יזרעאל",
+        "ar": "الكلية الأكاديمية عيمك يزراعيل",
+        "en": "Yezreel Valley College"
+      },
+      "url": "https://www.yvc.ac.il/",
+      "kind": "official_site",
+      "aliases": [
+        "עמק יזרעאל",
+        "كلية"
+      ],
+      "source_url": "https://www.yvc.ac.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "runi",
+      "category": "education",
+      "name": {
+        "he": "אוניברסיטת רייכמן",
+        "ar": "جامعة رايخمان",
+        "en": "Reichman University"
+      },
+      "url": "https://www.runi.ac.il/",
+      "kind": "official_site",
+      "aliases": [
+        "רייכמן",
+        "הבינתחומי",
+        "IDC",
+        "Reichman"
+      ],
+      "source_url": "https://www.runi.ac.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "mei-raanana",
+      "category": "water",
+      "name": {
+        "he": "מי רעננה",
+        "ar": "مياه رعنانا",
+        "en": "Mei Raanana"
+      },
+      "url": "https://mei-raanana.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "רעננה",
+        "رعنانا"
+      ],
+      "source_url": "https://mei-raanana.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "mey-herz",
+      "category": "water",
+      "name": {
+        "he": "מי הרצליה",
+        "ar": "مياه هرتسليا",
+        "en": "Mey Herzliya"
+      },
+      "url": "https://www.mey-herz.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "הרצליה",
+        "هرتسليا"
+      ],
+      "source_url": "https://www.mey-herz.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "mei-modiin",
+      "category": "water",
+      "name": {
+        "he": "מי מודיעין",
+        "ar": "مياه موديعين",
+        "en": "Mei Modiin"
+      },
+      "url": "https://mei-modiin.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "מודיעין",
+        "מודיעין מכבים רעות",
+        "מודיעין מכבים-רעות",
+        "موديعين"
+      ],
+      "source_url": "https://mei-modiin.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "tamar",
+      "category": "water",
+      "name": {
+        "he": "ת.מ.ר תאגיד מים",
+        "ar": "تامار للمياه",
+        "en": "Tamar Water Corporation"
+      },
+      "url": "https://tamarwater.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "תמר",
+        "רמלה",
+        "גדרה",
+        "קרית מלאכי",
+        "الرملة",
+        "جديرا"
+      ],
+      "source_url": "https://tamarwater.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "israel-railways",
+      "category": "public_transport",
+      "name": {
+        "he": "רכבת ישראל",
+        "ar": "قطار إسرائيل",
+        "en": "Israel Railways"
+      },
+      "url": "https://www.rail.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "רכבת",
+        "قطار",
+        "rail"
+      ],
+      "source_url": "https://www.rail.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "egged",
+      "category": "public_transport",
+      "name": {
+        "he": "אגד",
+        "ar": "إيغد",
+        "en": "Egged"
+      },
+      "url": "https://www.egged.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "אוטובוס",
+        "باص",
+        "باصات",
+        "ايجد"
+      ],
+      "source_url": "https://www.egged.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "dan",
+      "category": "public_transport",
+      "name": {
+        "he": "דן",
+        "ar": "دان",
+        "en": "Dan"
+      },
+      "url": "https://www.dan.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "אוטובוס",
+        "باص",
+        "باصات"
+      ],
+      "source_url": "https://www.dan.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "ravkav",
+      "category": "public_transport",
+      "name": {
+        "he": "רב-קו אונליין",
+        "ar": "راف كاف أونلاين",
+        "en": "Rav-Kav Online"
+      },
+      "url": "https://ravkavonline.co.il/he/",
+      "kind": "official_site",
+      "aliases": [
+        "רב קו",
+        "رافكاف",
+        "ربكاف",
+        "רבקו"
+      ],
+      "source_url": "https://ravkavonline.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "hopon",
+      "category": "public_transport",
+      "name": {
+        "he": "הופ-און",
+        "ar": "هوب أون",
+        "en": "HopOn"
+      },
+      "url": "https://www.hopon.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "הופ און",
+        "רב קו",
+        "راف كاف"
+      ],
+      "source_url": "https://www.hopon.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "elal",
+      "category": "travel",
+      "name": {
+        "he": "אל על",
+        "ar": "إل عال",
+        "en": "EL AL"
+      },
+      "url": "https://www.elal.com/",
+      "kind": "official_site",
+      "aliases": [
+        "אלעל",
+        "طيران",
+        "airline",
+        "flight"
+      ],
+      "source_url": "https://www.elal.com/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "israelpost",
+      "category": "government",
+      "name": {
+        "he": "דואר ישראל",
+        "ar": "بريد إسرائيل",
+        "en": "Israel Post"
+      },
+      "url": "https://israelpost.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "דואר",
+        "بريد",
+        "postal"
+      ],
+      "source_url": "https://israelpost.co.il/בנק-הדואר/טבלת-תאגידי-מים/",
+      "reviewed_on": "2026-11-01"
     }
   ]
 }
