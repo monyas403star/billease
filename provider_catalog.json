@@ -1,0 +1,906 @@
+{
+  "version": 1,
+  "reviewed_on": "2026-11-01",
+  "providers": [
+    {
+      "id": "iec",
+      "category": "electricity",
+      "name": {
+        "he": "חברת החשמל",
+        "ar": "شركة الكهرباء",
+        "en": "Israel Electric Corporation"
+      },
+      "url": "https://www.iec.co.il/contacts/",
+      "kind": "official_site",
+      "aliases": [
+        "IEC",
+        "חשבון חשמל",
+        "الكهرباء"
+      ],
+      "source_url": "https://www.iec.co.il/contacts/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "bezeq-energy",
+      "category": "electricity",
+      "name": {
+        "he": "בזק energy",
+        "ar": "بيزك إنرجي",
+        "en": "Bezeq Energy"
+      },
+      "url": "https://www.bezeq.co.il/info/energy_support/",
+      "kind": "payment_guidance",
+      "aliases": [
+        "בזק אנרגי",
+        "bezeq energy"
+      ],
+      "source_url": "https://www.bezeq.co.il/info/energy_support/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "pazgas",
+      "category": "gas",
+      "name": {
+        "he": "פזגז",
+        "ar": "بازغاز",
+        "en": "Pazgas"
+      },
+      "url": "https://www.pazgas.co.il/he/",
+      "kind": "official_site",
+      "aliases": [
+        "paz gas",
+        "غاز"
+      ],
+      "source_url": "https://www.pazgas.co.il/he/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "amisragas",
+      "category": "gas",
+      "name": {
+        "he": "אמישראגז",
+        "ar": "أميسراغاز",
+        "en": "Amisragas"
+      },
+      "url": "https://www.amisragas.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "אמישרא גז"
+      ],
+      "source_url": "https://www.amisragas.co.il/shop/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "supergas",
+      "category": "gas",
+      "name": {
+        "he": "סופרגז פאוור",
+        "ar": "سوبرغاز باور",
+        "en": "Supergas Power"
+      },
+      "url": "https://www.supergas-power.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "סופרגז",
+        "supergas"
+      ],
+      "source_url": "https://www.supergas.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "mei-avivim",
+      "category": "water",
+      "name": {
+        "he": "מי אביבים",
+        "ar": "مي أفيفيم",
+        "en": "Mei Avivim"
+      },
+      "url": "https://www.mei-avivim.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "תל אביב",
+        "تل أبيب"
+      ],
+      "source_url": "https://www.mei-avivim.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "mei-carmel",
+      "category": "water",
+      "name": {
+        "he": "מי כרמל",
+        "ar": "مي كرمل",
+        "en": "Mei Carmel"
+      },
+      "url": "https://www.mei-carmel.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "חיפה",
+        "حيفا"
+      ],
+      "source_url": "https://www.mei-carmel.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "mey-sheva",
+      "category": "water",
+      "name": {
+        "he": "מי שבע",
+        "ar": "مي شيفع",
+        "en": "Mey Sheva"
+      },
+      "url": "https://www.mey7.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "באר שבע",
+        "אופקים",
+        "بئر السبع"
+      ],
+      "source_url": "https://www.mey7.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "mei-galil",
+      "category": "water",
+      "name": {
+        "he": "מי הגליל",
+        "ar": "مياه الجليل",
+        "en": "Mei HaGalil"
+      },
+      "url": "https://megalil.co.il/he/",
+      "kind": "official_site",
+      "aliases": [
+        "מי הגליל",
+        "مي هجليل",
+        "سخنين"
+      ],
+      "source_url": "https://megalil.co.il/he/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "mey-na",
+      "category": "water",
+      "name": {
+        "he": "מי נעם",
+        "ar": "مي نعام",
+        "en": "Mey Na"
+      },
+      "url": "https://www.meyna.co.il/index.php?id=47",
+      "kind": "payment_guidance",
+      "aliases": [
+        "מי נועם",
+        "נצרת עילית",
+        "נוף הגליל",
+        "עפולה",
+        "نوف هجليل"
+      ],
+      "source_url": "https://www.meyna.co.il/index.php?id=47",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "peleg-galil",
+      "category": "water",
+      "name": {
+        "he": "פלג הגליל",
+        "ar": "بيلج هجليل",
+        "en": "Peleg HaGalil"
+      },
+      "url": "https://peleg-hagalil.org.il/",
+      "kind": "official_site",
+      "aliases": [
+        "צפת",
+        "صفد"
+      ],
+      "source_url": "https://peleg-hagalil.org.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "mei-netanya",
+      "category": "water",
+      "name": {
+        "he": "מי נתניה",
+        "ar": "مي نتانيا",
+        "en": "Mei Netanya"
+      },
+      "url": "https://www.mei-netanya.co.il/template/default.aspx?CatId=3&PageId=36",
+      "kind": "payment_guidance",
+      "aliases": [
+        "נתניה",
+        "نتانيا"
+      ],
+      "source_url": "https://www.mei-netanya.co.il/template/default.aspx?CatId=3&PageId=36",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "bezeq",
+      "category": "telecom",
+      "name": {
+        "he": "בזק",
+        "ar": "بيزك",
+        "en": "Bezeq"
+      },
+      "url": "https://bpay.bezeq.co.il/",
+      "kind": "payment_page",
+      "aliases": [
+        "بزك",
+        "bezek"
+      ],
+      "source_url": "https://www.bezeq.co.il/serviceandsupport/bill/option/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "cellcom",
+      "category": "telecom",
+      "name": {
+        "he": "סלקום",
+        "ar": "سيلكوم",
+        "en": "Cellcom"
+      },
+      "url": "https://cellcom.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "סלקום תקשורת",
+        "سيلكوم"
+      ],
+      "source_url": "https://cellcom.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "partner",
+      "category": "telecom",
+      "name": {
+        "he": "פרטנר",
+        "ar": "بارتنر",
+        "en": "Partner"
+      },
+      "url": "https://www.partner.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "orange",
+        "אורנג",
+        "أورانج"
+      ],
+      "source_url": "https://www.partner.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "pelephone",
+      "category": "telecom",
+      "name": {
+        "he": "פלאפון",
+        "ar": "بيليفون",
+        "en": "Pelephone"
+      },
+      "url": "https://www.pelephone.co.il/ds/heb/home/",
+      "kind": "official_site",
+      "aliases": [
+        "פלא פון",
+        "بيليفون"
+      ],
+      "source_url": "https://www.pelephone.co.il/ds/heb/home/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "hot",
+      "category": "telecom",
+      "name": {
+        "he": "HOT",
+        "ar": "هوت",
+        "en": "HOT"
+      },
+      "url": "https://www.hot.net.il/heb/main/",
+      "kind": "official_site",
+      "aliases": [
+        "הוט",
+        "hot telecom"
+      ],
+      "source_url": "https://www.hot.net.il/heb/main/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "hot-mobile",
+      "category": "telecom",
+      "name": {
+        "he": "HOT mobile",
+        "ar": "هوت موبايل",
+        "en": "HOT Mobile"
+      },
+      "url": "https://www.hotmobile.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "הוט מובייל"
+      ],
+      "source_url": "https://www.hotmobile.co.il/media/l4opp5s1/ownershiptransferform.pdf",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "yes",
+      "category": "telecom",
+      "name": {
+        "he": "yes / STING",
+        "ar": "يس / ستينغ",
+        "en": "yes / STING"
+      },
+      "url": "https://www.yes.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "יס",
+        "סטינג",
+        "sting tv"
+      ],
+      "source_url": "https://www.yes.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "golan",
+      "category": "telecom",
+      "name": {
+        "he": "גולן טלקום",
+        "ar": "غولان تيليكوم",
+        "en": "Golan Telecom"
+      },
+      "url": "https://golantelecom.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "גולן",
+        "جولان"
+      ],
+      "source_url": "https://golantelecom.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "019",
+      "category": "telecom",
+      "name": {
+        "he": "019 מובייל",
+        "ar": "019 موبايل",
+        "en": "019 Mobile"
+      },
+      "url": "https://019mobile.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "טלזר",
+        "telzar"
+      ],
+      "source_url": "https://019mobile.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "tel-aviv",
+      "category": "municipal",
+      "name": {
+        "he": "עיריית תל אביב-יפו",
+        "ar": "بلدية تل أبيب يافا",
+        "en": "Tel Aviv-Yafo Municipality"
+      },
+      "url": "https://www.tel-aviv.gov.il/Pages/HomePage.aspx",
+      "kind": "official_site",
+      "aliases": [
+        "תל אביב",
+        "יפו",
+        "ارنونا تل أبيب"
+      ],
+      "source_url": "https://www.tel-aviv.gov.il/Pages/HomePage.aspx",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "jerusalem",
+      "category": "municipal",
+      "name": {
+        "he": "עיריית ירושלים",
+        "ar": "بلدية القدس",
+        "en": "Jerusalem Municipality"
+      },
+      "url": "https://www.jerusalem.muni.il/",
+      "kind": "official_site",
+      "aliases": [
+        "ירושלים",
+        "القدس"
+      ],
+      "source_url": "https://www.jerusalem.muni.il/he/city/info/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "haifa",
+      "category": "municipal",
+      "name": {
+        "he": "עיריית חיפה",
+        "ar": "بلدية حيفا",
+        "en": "Haifa Municipality"
+      },
+      "url": "https://www.haifa.muni.il/",
+      "kind": "official_site",
+      "aliases": [
+        "חיפה",
+        "حيفا"
+      ],
+      "source_url": "https://www.haifa.muni.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "nof-galil",
+      "category": "municipal",
+      "name": {
+        "he": "עיריית נוף הגליל",
+        "ar": "بلدية نوف هجليل",
+        "en": "Nof HaGalil Municipality"
+      },
+      "url": "https://www.nof-hagalil.muni.il/",
+      "kind": "official_site",
+      "aliases": [
+        "נצרת עילית",
+        "الناصرة العليا"
+      ],
+      "source_url": "https://www.nof-hagalil.muni.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "harel",
+      "category": "insurance",
+      "name": {
+        "he": "הראל",
+        "ar": "هارئيل",
+        "en": "Harel"
+      },
+      "url": "https://www.harel-group.co.il/",
+      "kind": "official_site",
+      "aliases": [],
+      "source_url": "https://www.harel-group.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "migdal",
+      "category": "insurance",
+      "name": {
+        "he": "מגדל",
+        "ar": "ميغدال",
+        "en": "Migdal"
+      },
+      "url": "https://www.migdal.co.il/",
+      "kind": "official_site",
+      "aliases": [],
+      "source_url": "https://www.migdal.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "clal",
+      "category": "insurance",
+      "name": {
+        "he": "כלל ביטוח",
+        "ar": "كلال للتأمين",
+        "en": "Clal Insurance"
+      },
+      "url": "https://www.clalbit.co.il/",
+      "kind": "official_site",
+      "aliases": [],
+      "source_url": "https://www.clalbit.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "menora",
+      "category": "insurance",
+      "name": {
+        "he": "מנורה מבטחים",
+        "ar": "منورا مفتاحيم",
+        "en": "Menora Mivtachim"
+      },
+      "url": "https://www.menoramivt.co.il/",
+      "kind": "official_site",
+      "aliases": [],
+      "source_url": "https://www.menoramivt.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "phoenix",
+      "category": "insurance",
+      "name": {
+        "he": "הפניקס",
+        "ar": "هفينيكس",
+        "en": "The Phoenix"
+      },
+      "url": "https://www.fnx.co.il/",
+      "kind": "official_site",
+      "aliases": [],
+      "source_url": "https://www.fnx.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "aig",
+      "category": "insurance",
+      "name": {
+        "he": "AIG",
+        "ar": "AIG للتأمين",
+        "en": "AIG"
+      },
+      "url": "https://www.aig.co.il/",
+      "kind": "official_site",
+      "aliases": [],
+      "source_url": "https://www.aig.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "direct-insurance",
+      "category": "insurance",
+      "name": {
+        "he": "ביטוח ישיר",
+        "ar": "بيتواح يشير",
+        "en": "Direct Insurance"
+      },
+      "url": "https://www.555.co.il/",
+      "kind": "official_site",
+      "aliases": [],
+      "source_url": "https://www.555.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "clalit",
+      "category": "health",
+      "name": {
+        "he": "כללית",
+        "ar": "كلاليت",
+        "en": "Clalit"
+      },
+      "url": "https://www.clalit.co.il/",
+      "kind": "official_site",
+      "aliases": [],
+      "source_url": "https://www.clalit.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "maccabi",
+      "category": "health",
+      "name": {
+        "he": "מכבי שירותי בריאות",
+        "ar": "مكابي للخدمات الصحية",
+        "en": "Maccabi Healthcare"
+      },
+      "url": "https://www.maccabi4u.co.il/",
+      "kind": "official_site",
+      "aliases": [],
+      "source_url": "https://www.maccabi4u.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "meuhedet",
+      "category": "health",
+      "name": {
+        "he": "מאוחדת",
+        "ar": "مئوحيدت",
+        "en": "Meuhedet"
+      },
+      "url": "https://www.meuhedet.co.il/",
+      "kind": "official_site",
+      "aliases": [],
+      "source_url": "https://www.meuhedet.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "leumit",
+      "category": "health",
+      "name": {
+        "he": "לאומית",
+        "ar": "لئوميت",
+        "en": "Leumit"
+      },
+      "url": "https://www.leumit.co.il/",
+      "kind": "official_site",
+      "aliases": [],
+      "source_url": "https://www.leumit.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "road6",
+      "category": "transport",
+      "name": {
+        "he": "כביש 6 – דרך ארץ",
+        "ar": "شارع6 – ديرخ إيرتس",
+        "en": "Highway6 – Derech Eretz"
+      },
+      "url": "https://www.kvish6.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "כביש6",
+        "kvish6"
+      ],
+      "source_url": "https://www.kvish6.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "road6-north",
+      "category": "transport",
+      "name": {
+        "he": "כביש 6 חוצה צפון",
+        "ar": "شارع6 شمال",
+        "en": "Highway6 North"
+      },
+      "url": "https://www.6cn.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "חוצה צפון",
+        "6cn"
+      ],
+      "source_url": "https://www.6cn.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "carmel-tunnels",
+      "category": "transport",
+      "name": {
+        "he": "מנהרות הכרמל",
+        "ar": "أنفاق الكرمل",
+        "en": "Carmel Tunnels"
+      },
+      "url": "https://www.carmeltunnels.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "מנהרות",
+        "carmelton"
+      ],
+      "source_url": "https://www.carmeltunnels.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "fast-lane",
+      "category": "transport",
+      "name": {
+        "he": "הנתיב המהיר",
+        "ar": "المسار السريع",
+        "en": "The Fast Lane"
+      },
+      "url": "https://fastlane.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "נתיב מהיר"
+      ],
+      "source_url": "https://fastlane.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "pango",
+      "category": "transport",
+      "name": {
+        "he": "פנגו",
+        "ar": "بانغو",
+        "en": "Pango"
+      },
+      "url": "https://www.pango.co.il/",
+      "kind": "official_site",
+      "aliases": [
+        "חניה",
+        "مواقف"
+      ],
+      "source_url": "https://www.pango.co.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "cello",
+      "category": "transport",
+      "name": {
+        "he": "Cello / סלופארק",
+        "ar": "سيلو / سيلوبارك",
+        "en": "Cello / Cellopark"
+      },
+      "url": "https://www.cello-app.com/global/",
+      "kind": "official_site",
+      "aliases": [
+        "סלופארק",
+        "חניה",
+        "cellopark"
+      ],
+      "source_url": "https://www.cello-app.com/global/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "national-insurance",
+      "category": "government",
+      "name": {
+        "he": "המוסד לביטוח לאומי",
+        "ar": "مؤسسة التأمين الوطني",
+        "en": "National Insurance Institute"
+      },
+      "url": "https://www.btl.gov.il/Pages/default.aspx",
+      "kind": "official_site",
+      "aliases": [
+        "ביטוח לאומי",
+        "تأمين وطني",
+        "btl"
+      ],
+      "source_url": "https://www.btl.gov.il/Pages/default.aspx",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "vehicle-license",
+      "category": "government",
+      "name": {
+        "he": "חידוש רישיון רכב – משרד התחבורה",
+        "ar": "تجديد رخصة المركبة – وزارة المواصلات",
+        "en": "Vehicle licence renewal"
+      },
+      "url": "https://www.gov.il/he/service/car_licence_renewal",
+      "kind": "payment_guidance",
+      "aliases": [
+        "טסט",
+        "אגרת רישוי",
+        "ترخيص سيارة"
+      ],
+      "source_url": "https://www.gov.il/he/service/car_licence_renewal",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "traffic-fines",
+      "category": "government",
+      "name": {
+        "he": "תשלום קנסות תעבורה – משטרת ישראל",
+        "ar": "دفع مخالفات السير – الشرطة",
+        "en": "Police traffic fines"
+      },
+      "url": "https://www.gov.il/he/service/police_fine_payment",
+      "kind": "payment_guidance",
+      "aliases": [
+        "דוחות",
+        "קנסות",
+        "مخالفات"
+      ],
+      "source_url": "https://www.gov.il/he/service/police_fine_payment",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "government-services",
+      "category": "government",
+      "name": {
+        "he": "שירותים ממשלתיים – gov.il",
+        "ar": "الخدمات الحكومية – gov.il",
+        "en": "Government services – gov.il"
+      },
+      "url": "https://www.gov.il/",
+      "kind": "official_site",
+      "aliases": [
+        "אגרות",
+        "ממשלה",
+        "حكومة",
+        "رسوم"
+      ],
+      "source_url": "https://www.gov.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "tau",
+      "category": "education",
+      "name": {
+        "he": "אוניברסיטת תל אביב",
+        "ar": "جامعة تل أبيب",
+        "en": "Tel Aviv University"
+      },
+      "url": "https://www.tau.ac.il/",
+      "kind": "official_site",
+      "aliases": [
+        "שכר לימוד",
+        "قسط جامعة",
+        "tuition"
+      ],
+      "source_url": "https://www.tau.ac.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "huji",
+      "category": "education",
+      "name": {
+        "he": "האוניברסיטה העברית",
+        "ar": "الجامعة العبرية",
+        "en": "Hebrew University"
+      },
+      "url": "https://www.huji.ac.il/",
+      "kind": "official_site",
+      "aliases": [
+        "שכר לימוד",
+        "قسط جامعة",
+        "tuition"
+      ],
+      "source_url": "https://www.huji.ac.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "haifa-uni",
+      "category": "education",
+      "name": {
+        "he": "אוניברסיטת חיפה",
+        "ar": "جامعة حيفا",
+        "en": "University of Haifa"
+      },
+      "url": "https://www.haifa.ac.il/",
+      "kind": "official_site",
+      "aliases": [
+        "שכר לימוד",
+        "قسط جامعة",
+        "tuition"
+      ],
+      "source_url": "https://www.haifa.ac.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "bgu",
+      "category": "education",
+      "name": {
+        "he": "אוניברסיטת בן גוריון",
+        "ar": "جامعة بن غوريون",
+        "en": "Ben-Gurion University"
+      },
+      "url": "https://www.bgu.ac.il/",
+      "kind": "official_site",
+      "aliases": [
+        "שכר לימוד",
+        "قسط جامعة",
+        "tuition"
+      ],
+      "source_url": "https://www.bgu.ac.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "open-uni",
+      "category": "education",
+      "name": {
+        "he": "האוניברסיטה הפתוחה",
+        "ar": "الجامعة المفتوحة",
+        "en": "Open University"
+      },
+      "url": "https://www.openu.ac.il/",
+      "kind": "official_site",
+      "aliases": [
+        "שכר לימוד",
+        "قسط جامعة",
+        "tuition"
+      ],
+      "source_url": "https://www.openu.ac.il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "netflix",
+      "category": "subscriptions",
+      "name": {
+        "he": "Netflix",
+        "ar": "نتفليكس",
+        "en": "Netflix"
+      },
+      "url": "https://www.netflix.com/il/",
+      "kind": "official_site",
+      "aliases": [
+        "נטפליקס"
+      ],
+      "source_url": "https://www.netflix.com/il/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "spotify",
+      "category": "subscriptions",
+      "name": {
+        "he": "Spotify",
+        "ar": "سبوتيفاي",
+        "en": "Spotify"
+      },
+      "url": "https://www.spotify.com/il-he/",
+      "kind": "official_site",
+      "aliases": [
+        "ספוטיפיי"
+      ],
+      "source_url": "https://www.spotify.com/il-he/",
+      "reviewed_on": "2026-11-01"
+    },
+    {
+      "id": "disney",
+      "category": "subscriptions",
+      "name": {
+        "he": "Disney+",
+        "ar": "ديزني بلس",
+        "en": "Disney+"
+      },
+      "url": "https://www.disneyplus.com/",
+      "kind": "official_site",
+      "aliases": [
+        "דיסני",
+        "disney plus"
+      ],
+      "source_url": "https://www.disneyplus.com/",
+      "reviewed_on": "2026-11-01"
+    }
+  ]
+}

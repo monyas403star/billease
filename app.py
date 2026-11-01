@@ -27,11 +27,13 @@ import i18n
 import email_templates
 import payment_plans
 import bill_assistant
+import provider_directory
 import scheduler
 
 # auto-create DB + tables + demo data on first start (idempotent)
 bootstrap.DB_FILE = db.database_path()
 bootstrap.init_db()
+provider_directory.init_schema()
 i18n.init_schema()
 payment_plans.init_schema()
 scheduler.init_schema()
@@ -196,6 +198,62 @@ def bills_page():
     if not need_login():
         return redirect(url_for("root"))
     return render_template("bills.html", user=current_user())
+
+
+@app.get("/payment-portal")
+def payment_portal_page():
+    if not need_login():
+        return redirect(url_for("root"))
+    return render_template("payment_portal.html", user=current_user())
+
+
+@app.get("/api/payment-providers")
+def api_payment_providers():
+    if not need_login():
+        return jsonify(ok=False, error="לא מחובר"), 401
+    try:
+        catalog = provider_directory.get_catalog()
+    except (OSError, ValueError, TypeError, KeyError):
+        return jsonify(ok=False, error="The provider directory is unavailable. Try again later."), 503
+    return jsonify(ok=True, **catalog, **provider_directory.account_state(session["user_id"]), categories=provider_directory.CATEGORIES,
+                   category_names={key: {locale: i18n.translate_in(locale, label) for locale in ('he','ar','en')}
+                                   for key, label in provider_directory.CATEGORIES.items()})
+
+
+@app.post("/api/payment-providers/favorite")
+def api_provider_favorite():
+    if not need_login():
+        return jsonify(ok=False, error="לא מחובר"), 401
+    data = security.json_object(request)
+    identifier = security.text(data, "provider_id", 60, required=True)
+    enabled = data.get("enabled")
+    if not isinstance(enabled, bool) or not provider_directory.known(identifier):
+        raise BadRequest("Choose a listed provider.")
+    if enabled:
+        db.query("INSERT OR IGNORE INTO provider_favorites(user_id,provider_id) VALUES (?,?)",(session["user_id"],identifier))
+    else:
+        db.query("DELETE FROM provider_favorites WHERE user_id=? AND provider_id=?",(session["user_id"],identifier))
+    return jsonify(ok=True)
+
+
+@app.post("/api/payment-providers/visit")
+def api_provider_visit():
+    if not need_login():
+        return jsonify(ok=False, error="לא מחובר"), 401
+    data = security.json_object(request)
+    identifier = security.text(data, "provider_id", 60, required=True)
+    if not provider_directory.known(identifier):
+        raise BadRequest("Choose a listed provider.")
+    if not security.rate_allowed("provider-visits", session["user_id"], 60, 900):
+        return jsonify(ok=False, error="Try again later."), 429
+    conn = db.get_conn()
+    try:
+        with conn:
+            conn.execute("INSERT INTO provider_visits(user_id,provider_id) VALUES (?,?)",(session["user_id"],identifier))
+            conn.execute("DELETE FROM provider_visits WHERE user_id=? AND visit_id NOT IN (SELECT visit_id FROM provider_visits WHERE user_id=? ORDER BY visit_id DESC LIMIT 100)",(session["user_id"],session["user_id"]))
+    finally:
+        conn.close()
+    return jsonify(ok=True)
 
 
 @app.route("/assistant")
