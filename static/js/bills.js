@@ -39,7 +39,7 @@ function render() {
         <td>${statusBadge(b)}</td>
         <td>
           ${b.is_paid ? "" :
-            `<button class="btn primary small" data-pay="${b.bill_id}">${t("שולם")}</button>`}
+            `<a class="btn small" href="/payment-portal?bill_id=${encodeURIComponent(b.bill_id)}">${t("Provider website")}</a> <button class="btn primary small" data-pay="${b.bill_id}">${t("שולם")}</button>`}
           <button class="btn small danger" data-del="${b.bill_id}">${t("מחיקה")}</button>
         </td>
       </tr>`;
