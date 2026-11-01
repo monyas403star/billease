@@ -357,7 +357,11 @@
     "No bills in selected year": "אין חשבונות בשנה הנבחרת",
     "Add bills or select another year. No expenses or savings are inferred from missing data.": "הוסיפו חשבונות או בחרו שנה אחרת. לא מסיקים הוצאות או חיסכון מנתונים חסרים.",
     "Charts could not load. The summary and budget analysis are still available.": "התרשימים לא נטענו. הסיכום וניתוח התקציב עדיין זמינים.",
-    "Reports could not load. Please try again.": "טעינת הדוחות נכשלה. נסו שוב."
+    "Reports could not load. Please try again.": "טעינת הדוחות נכשלה. נסו שוב.",
+    "Category shares of annual bills": "התפלגות החשבונות השנתיים לפי קטגוריה",
+    "Percentages show each category’s share of the selected year’s total. Small slices are listed below. Figures may differ slightly due to rounding.": "האחוזים מציגים את חלקה של כל קטגוריה בסכום השנה הנבחרת. פלחים קטנים מפורטים למטה. ייתכנו הבדלים קלים עקב עיגול.",
+    "Share of total": "אחוז מהסכום הכולל",
+    "No category amounts in selected year.": "אין סכומים לפי קטגוריה בשנה הנבחרת."
   },
   "ar": {
     "דשבורד": "لوحة التحكم",
@@ -717,7 +721,11 @@
     "No bills in selected year": "لا توجد فواتير في السنة المختارة",
     "Add bills or select another year. No expenses or savings are inferred from missing data.": "أضف فواتير أو اختر سنة أخرى. لا نستنتج مصاريف أو توفيرًا من بيانات ناقصة.",
     "Charts could not load. The summary and budget analysis are still available.": "تعذّر تحميل الرسوم. الملخّص وتحليل الميزانية ما زالا متاحين.",
-    "Reports could not load. Please try again.": "تعذّر تحميل التقارير. حاول مجددًا."
+    "Reports could not load. Please try again.": "تعذّر تحميل التقارير. حاول مجددًا.",
+    "Category shares of annual bills": "توزيع الفواتير السنوية حسب الفئة",
+    "Percentages show each category’s share of the selected year’s total. Small slices are listed below. Figures may differ slightly due to rounding.": "تُظهر النِّسب حصة كل فئة من مجموع السنة المختارة. تظهر الفئات الصغيرة في الجدول أدناه. قد توجد فروق بسيطة بسبب التقريب.",
+    "Share of total": "النسبة من المجموع",
+    "No category amounts in selected year.": "لا توجد مبالغ حسب الفئة في السنة المختارة."
   },
   "en": {
     "דשבורד": "Dashboard",
@@ -1077,6 +1085,10 @@
     "No bills in selected year": "No bills in selected year",
     "Add bills or select another year. No expenses or savings are inferred from missing data.": "Add bills or select another year. No expenses or savings are inferred from missing data.",
     "Charts could not load. The summary and budget analysis are still available.": "Charts could not load. The summary and budget analysis are still available.",
-    "Reports could not load. Please try again.": "Reports could not load. Please try again."
+    "Reports could not load. Please try again.": "Reports could not load. Please try again.",
+    "Category shares of annual bills": "Category shares of annual bills",
+    "Percentages show each category’s share of the selected year’s total. Small slices are listed below. Figures may differ slightly due to rounding.": "Percentages show each category’s share of the selected year’s total. Small slices are listed below. Figures may differ slightly due to rounding.",
+    "Share of total": "Share of total",
+    "No category amounts in selected year.": "No category amounts in selected year."
   }
 }
