@@ -1,0 +1,48 @@
+{% extends "_base.html" %}
+{% block title %}{{ t('AI assistant') }} - BillEase{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/assistant.css', v='assistant1') }}">
+{% include "_nav.html" %}
+<main class="page">
+  <div class="page-head"><h1>{{ t('AI assistant') }}</h1><p class="muted">{{ t('Ask about your saved bills, spending categories and budget alerts.') }}</p></div>
+  <section class="card">
+    <div class="assistant-period">
+      <label>{{ t('Year') }} <input id="ai-year" type="number" min="2000" max="2300" required></label>
+      <label>{{ t('Month') }} <select id="ai-month"><option value="0">{{ t('Whole year') }}</option></select></label>
+      <button type="button" class="btn" id="ai-refresh">{{ t('Refresh facts') }}</button>
+      <a class="link-btn" href="{{ url_for('reports_page') }}">{{ t('דוחות') }}</a>
+    </div>
+    <p class="muted">{{ t('Totals follow bill due dates and recorded paid status, not bank transactions. Next-30-day totals and budget alerts always follow today.') }}</p>
+    <div id="ai-facts-status" role="status" aria-live="polite"></div>
+    <div id="ai-cards" class="assistant-cards"></div>
+    <form id="ai-form" class="form">
+      <label for="ai-question">{{ t('Your question') }}</label>
+      <textarea id="ai-question" name="question" rows="3" maxlength="700" required placeholder="{{ t('For example: what should I review in my spending?') }}"></textarea>
+      <div class="assistant-prompts">
+        <button type="button" class="btn small" data-question="{{ t('How much is still open in the selected period?') }}">{{ t('Open bills') }}</button>
+        <button type="button" class="btn small" data-question="{{ t('Which category costs the most, and what can I review?') }}">{{ t('Largest category') }}</button>
+        <button type="button" class="btn small" data-question="{{ t('Have I exceeded any monthly budgets?') }}">{{ t('Budget alerts') }}</button>
+        <button type="button" class="btn small" data-question="{{ t('Can you compare my bills with the previous year fairly?') }}">{{ t('Year comparison') }}</button>
+      </div>
+      <p class="muted">{{ t('When you ask, your question and summarized amounts are sent to OpenAI. Your identity, bill images and supplier names are not sent automatically. Avoid entering personal details.') }}</p>
+      <button id="ai-send" type="submit" class="btn primary">{{ t('Ask the assistant') }}</button>
+      <p id="ai-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+  <section class="card assistant-answer" id="ai-answer-panel" hidden aria-live="polite">
+    <h2>{{ t('AI explanation') }}</h2>
+    <div id="ai-answer" class="assistant-answer-text"></div>
+    <h3>{{ t('Calculated facts used in this answer') }}</h3>
+    <dl id="ai-references" class="assistant-facts"></dl>
+    <p class="muted">{{ t('AI can make mistakes. Check these calculated facts and your original bills before making a decision. The assistant cannot pay, edit or delete bills, and it does not verify supplier offers.') }}</p>
+  </section>
+  <section class="card assistant-source">
+    <h2>{{ t('Account facts behind the explanation') }}</h2>
+    <p class="muted" id="ai-scope"></p>
+    <p class="muted">{{ t('Missing bills are missing data, not proof of zero spending. Comparisons require recorded bills in matching completed periods. Budget excess is not guaranteed savings.') }}</p>
+    <dl id="ai-all-facts" class="assistant-facts"></dl>
+    <p class="muted">{{ t('Only aggregate data is available to the assistant. Each question uses a fresh account summary and does not include previous questions.') }}</p>
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/assistant.js', v='assistant1') }}"></script>{% endblock %}
