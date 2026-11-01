@@ -3,9 +3,49 @@
   const el=id=>document.getElementById(id),search=el('provider-search'),category=el('provider-category'),billSelect=el('portal-bill');
   let catalog=null,bills=[],selectedProvider=null;
   const names={official_site:'Official website',payment_guidance:'Payment information',payment_page:'Payment page'};
+  const categoryIcons={
+    all:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+    electricity:'<path d="m13 2-9 12h7l-1 8L21 9h-8z"/>',
+    gas:'<path d="M12 3c1 5-4 6-4 10 0 2 1 3 2 3-1-3 2-4 3-7 2 3 5 5 5 8a6 6 0 0 1-12 0c0-6 4-8 6-14z"/>',
+    water:'<path d="M12 2C9 7 5 11 5 15a7 7 0 0 0 14 0c0-4-4-8-7-13z"/>',
+    telecom:'<rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4M10 6h4"/>',
+    municipal:'<path d="m3 9 9-6 9 6M4 10h16M5 20h14M8 10v10M12 10v10M16 10v10M3 22h18"/>',
+    insurance:'<path d="m12 2 8 4v6c0 5-4 8-8 10-4-2-8-5-8-10V6zM8 12l3 3 5-6"/>',
+    health:'<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 7v10M7 12h10"/>',
+    transport:'<path d="m5 9 2-5h10l2 5M3 10h18v8H3zM6 18v3M18 18v3M6 14h2M16 14h2"/>',
+    government:'<path d="M6 2h9l4 4v16H6zM15 2v5h4M9 11h7M9 15h7M9 19h5"/>',
+    education:'<path d="m2 9 10-6 10 6-10 6zM6 12v6c4 3 8 3 12 0v-6M22 9v9"/>',
+    subscriptions:'<rect x="3" y="4" width="18" height="16" rx="3"/><path d="m10 8 6 4-6 4z"/>',
+    banking:'<path d="m2 8 10-5 10 5H2zM5 11v7M10 11v7M14 11v7M19 11v7M3 21h18"/>',
+    credit_cards:'<rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 9h20M6 15h5"/>',
+    electronics:'<rect x="5" y="3" width="14" height="13" rx="1"/><path d="m5 16-3 5h20l-3-5M10 18h4"/>',
+    home_retail:'<path d="m3 11 9-8 9 8M5 10v11h14V10M10 21v-7h4v7"/>',
+    retail:'<path d="M2 3h3l3 13h11l3-10H6M10 21h.01M18 21h.01"/>',
+    public_transport:'<rect x="5" y="2" width="14" height="18" rx="3"/><path d="M5 10h14M8 6h8M8 15h1M15 15h1M8 20v2M16 20v2"/>',
+    travel:'<path d="m22 3-7 8 1 9-3 2-3-8-5 4-3-1 5-6-5-4 2-2 8 2 8-6z"/>'
+  };
+  function buildCategoryButtons(){
+    const counts={all:catalog.providers.length};
+    catalog.providers.forEach(provider=>{counts[provider.category]=(counts[provider.category]||0)+1;});
+    const choices=[['all',t('All services')],...Object.entries(catalog.categories).filter(([id])=>counts[id]).map(([id,label])=>[id,t(label)])];
+    el('provider-category-buttons').replaceChildren(...choices.map(([id,fullLabel])=>{
+      const button=document.createElement('button');button.type='button';button.className='provider-category-button';button.dataset.category=id;
+      button.title=fullLabel;button.setAttribute('aria-pressed',String(category.value===id));
+      const icon=document.createElement('span');icon.className='provider-category-icon';icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+(categoryIcons[id]||categoryIcons.all)+'</svg>';icon.setAttribute('aria-hidden','true');
+      const label=document.createElement('span');label.textContent=id==='all'?t('All services'):t('Category button: '+id);label.className='provider-category-label';
+      // Future categories still receive their translated full title without a code change.
+      if(label.textContent==='Category button: '+id)label.textContent=fullLabel;
+      const count=document.createElement('span');count.className='provider-category-count';count.textContent=counts[id];
+      button.append(icon,label,count);return button;
+    }));
+  }
+  function syncCategoryButtons(){
+    el('provider-category-buttons').querySelectorAll('[data-category]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.category===category.value)));
+  }
   function normalize(value){return String(value||'').normalize('NFKD').replace(/[\u0591-\u05C7\u064B-\u065F\u0670\u0640\u0300-\u036f]/g,'').toLowerCase().replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}]+/gu,' ').trim();}
   function render(){
     if(!catalog)return;
+    syncCategoryButtons();
     const tokens=normalize(search.value).split(' ').filter(Boolean);
     const providers=catalog.providers.filter(p=>{
       const hay=normalize([...Object.values(p.name),...p.aliases,...Object.values(catalog.category_names[p.category]),new URL(p.url).hostname].join(' '));
@@ -40,9 +80,10 @@
       const previous=category.value;category.replaceChildren(new Option(t('All services'),'all'));
       for(const[key,label]of Object.entries(data.categories))category.add(new Option(t(label),key));
       if([...category.options].some(option=>option.value===previous))category.value=previous;
+      buildCategoryButtons();
       el('provider-reviewed').textContent=t('Sources reviewed: {date}. External sites may change; this is not a live availability check.',{date:fmtDate(data.reviewed_on)});
       render();
-    }catch(error){catalog=null;el('provider-grid').replaceChildren();el('provider-empty').hidden=true;el('provider-count').textContent=t('The provider directory is unavailable. Try again later.');}
+    }catch(error){catalog=null;el('provider-category-buttons').replaceChildren();el('provider-grid').replaceChildren();el('provider-empty').hidden=true;el('provider-count').textContent=t('The provider directory is unavailable. Try again later.');}
     finally{el('provider-retry').disabled=false;}
   }
   async function loadBills(){
@@ -53,6 +94,10 @@
       if(bills.some(b=>String(b.bill_id)===id)){billSelect.value=id;selectBill();}
     }catch(error){/* Provider browsing remains available if account bill loading fails. */}
   }
+  el('provider-category-buttons').addEventListener('click',event=>{
+    const button=event.target.closest('[data-category]');if(!button||!catalog)return;
+    category.value=button.dataset.category;search.value='';el('provider-view').value='all';render();
+  });
   search.addEventListener('input',render);category.addEventListener('change',render);billSelect.addEventListener('change',selectBill);
   el('provider-clear').addEventListener('click',()=>{search.value='';category.value='all';el('provider-view').value='all';render();});
   el('provider-retry').addEventListener('click',load);
