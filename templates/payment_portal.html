@@ -1,0 +1,42 @@
+{% extends "_base.html" %}
+{% block title %}{{ t('Provider payment portal') }} - BillEase{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/payment_portal.css', v='providers1') }}">
+{% include "_nav.html" %}
+<main class="page">
+  <div class="page-head"><h1>{{ t('Provider payment portal') }}</h1><p class="muted">{{ t('Find the provider on your bill and open its official payment or service website.') }}</p></div>
+  <section class="card provider-intro">
+    <h2>{{ t('Pay directly with your provider') }}</h2>
+    <p>{{ t('Payment takes place on the provider’s website, outside BillEase. We do not collect card details or transfer money, and there is no automatic payment confirmation.') }}</p>
+    <p class="muted">{{ t('Some links open a payment page; others open payment instructions or an official website where you may need to sign in. Check the provider and amount before paying.') }}</p>
+    <label for="portal-bill">{{ t('Your bill (optional)') }}</label>
+    <select id="portal-bill"><option value="">{{ t('Browse without selecting a bill') }}</option></select>
+    <div id="portal-bill-details" class="provider-bill-info" hidden></div>
+    <p class="muted">{{ t('Your bill details are shown here for reference only. They are not attached to the external link. Opening a site or returning here does not mark the bill paid.') }}</p>
+    <a class="link-btn" href="{{ url_for('bills_page') }}">{{ t('Return to my bills') }}</a>
+  </section>
+  <section class="card provider-search">
+    <div class="provider-search-fields">
+      <label>{{ t('Search providers') }}<input id="provider-search" type="search" maxlength="120" placeholder="{{ t('Name, city or service in Hebrew, Arabic or English') }}"></label>
+      <label>{{ t('Service category') }}<select id="provider-category"><option value="all">{{ t('All services') }}</option></select></label>
+      <label>{{ t('Directory view') }}<select id="provider-view"><option value="all">{{ t('All destinations') }}</option><option value="favorites">{{ t('My favorites') }}</option><option value="recent">{{ t('Recently requested destinations') }}</option><option value="payment">{{ t('Payment pages and instructions') }}</option></select></label>
+      <button type="button" class="btn" id="provider-clear">{{ t('Clear filters') }}</button>
+      <button type="button" class="btn" id="provider-retry">{{ t('Refresh') }}</button>
+    </div>
+    <p class="muted">{{ t('Favorites and recent destinations are private to your account. Recent activity records a request to open a link, not a payment.') }}</p>
+    <p id="provider-count" role="status" aria-live="polite"></p>
+    <p class="muted" id="provider-reviewed"></p>
+    <div id="provider-grid" class="provider-grid"></div>
+    <div id="provider-empty" hidden><h2 id="provider-empty-title">{{ t('Provider not listed?') }}</h2><p id="provider-empty-text">{{ t('This directory does not cover every provider. For rent, private lessons, shops or another business, request its official payment channel directly. Do not choose a different provider just because the category matches.') }}</p></div>
+  </section>
+  <dialog id="provider-dialog" class="provider-dialog" aria-labelledby="provider-dialog-title">
+    <div class="modal-head"><h2 id="provider-dialog-title"></h2><button type="button" class="btn" id="provider-close">{{ t('סגירה') }}</button></div>
+    <p>{{ t('Make sure this is the provider printed on your bill. Providers in the same city or category may be different organizations.') }}</p>
+    <p class="muted" id="provider-kind"></p>
+    <p><b>{{ t('Destination') }}</b></p><p id="provider-destination" class="provider-destination" dir="ltr"></p>
+    <p class="muted">{{ t('Complete payment and obtain confirmation from the provider. Afterwards, you can record it as paid in My bills. BillEase cannot verify an external payment from this link.') }}</p>
+    <a id="provider-outbound" class="btn primary" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">{{ t('Open official destination') }} ↗</a>
+  </dialog>
+</main>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/payment_portal.js', v='providers1') }}"></script>{% endblock %}
