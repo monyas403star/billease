@@ -26,6 +26,7 @@ import categorize
 import i18n
 import email_templates
 import payment_plans
+import bill_assistant
 import scheduler
 
 # auto-create DB + tables + demo data on first start (idempotent)
@@ -195,6 +196,55 @@ def bills_page():
     if not need_login():
         return redirect(url_for("root"))
     return render_template("bills.html", user=current_user())
+
+
+@app.route("/assistant")
+def assistant_page():
+    if not need_login():
+        return redirect(url_for("root"))
+    return render_template("assistant.html", user=current_user())
+
+
+def assistant_period(data):
+    try:
+        # Exact integer strings only; reject booleans, decimals and invalid months.
+        year_text, month_text = str(data.get("year", date.today().year)), str(data.get("month", 0))
+        if not year_text.isdigit() or not month_text.isdigit():
+            raise ValueError()
+        year, month = int(year_text), int(month_text)
+        if not 2000 <= year <= 2300 or not 0 <= month <= 12:
+            raise ValueError()
+        return year, month
+    except (ValueError, TypeError):
+        raise BadRequest("Choose a valid year and month.")
+
+
+@app.get("/api/assistant/summary")
+def api_assistant_summary():
+    if not need_login():
+        return jsonify(ok=False, error="לא מחובר"), 401
+    year, month = assistant_period(request.args)
+    result = bill_assistant.summary(session["user_id"], year, month, i18n.language())
+    return jsonify(ok=True, summary=result)
+
+
+@app.post("/api/assistant/ask")
+def api_assistant_ask():
+    if not need_login():
+        return jsonify(ok=False, error="לא מחובר"), 401
+    data = security.json_object(request)
+    question = security.text(data, "question", 700, required=True)
+    year, month = assistant_period(data)
+    if not os.environ.get("OPENAI_API_KEY", "").strip():
+        return jsonify(ok=False, error="AI is not configured. Your account data is still available below."), 503
+    if not security.rate_allowed("assistant", session["user_id"], 12, 900):
+        return jsonify(ok=False, error="You have reached the question limit. Try again in 15 minutes."), 429
+    snapshot = bill_assistant.summary(session["user_id"], year, month, i18n.language())
+    try:
+        answer = bill_assistant.explain(question, snapshot, i18n.language())
+    except bill_assistant.AssistantError as exc:
+        return jsonify(ok=False, error=exc.message), exc.status
+    return jsonify(ok=True, **answer, summary=snapshot)
 
 
 @app.route("/calendar")
