@@ -17,6 +17,7 @@
       <svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16l4-2 4 2 4-2 4 2V8l-6-6zM7 13h7v2H7v-2zm0-4h10v2H7V9z"/></svg>
       {{ t("החשבונות שלי") }}
     </a>
+    <a href="{{ url_for('calendar_page') }}"><span aria-hidden="true">▦</span> {{ t('Payment calendar') }}</a>
     <a href="{{ url_for('reports_page') }}">
       <svg class="ic" viewBox="0 0 24 24"><path d="M5 9v12H1V9h4zm7-7v19h-4V2h4zm7 5v14h-4V7h4z"/></svg>
       {{ t("דוחות") }}

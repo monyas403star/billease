@@ -1,0 +1,37 @@
+{% extends "_base.html" %}
+{% block title %}{{ t('Payment calendar') }} - BillEase{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css', v='calendar1') }}">
+{% include "_nav.html" %}
+<main class="page">
+  <div class="page-head"><h1>{{ t('Payment calendar') }}</h1><p class="muted">{{ t('See your saved bills on their due dates. Select a payment to view its details.') }}</p></div>
+  <section class="card">
+    <div class="calendar-toolbar">
+      <div class="calendar-controls">
+        <button type="button" class="btn" id="cal-prev">{{ t('Previous month') }}</button>
+        <label>{{ t('Month') }} <input type="month" id="cal-month" min="2000-01" max="2300-12" required></label>
+        <button type="button" class="btn" id="cal-next">{{ t('Next month') }}</button>
+        <button type="button" class="btn" id="cal-today">{{ t('Today') }}</button>
+      </div>
+      <div class="calendar-controls">
+        <label>{{ t('Show') }} <select id="cal-filter"><option value="all">{{ t('הכל') }}</option><option value="open">{{ t('לא שולמו') }}</option><option value="paid">{{ t('שולם') }}</option></select></label>
+        <div role="group" aria-label="{{ t('Calendar view') }}"><button type="button" class="btn" id="cal-grid-view" aria-pressed="true">{{ t('Month view') }}</button> <button type="button" class="btn" id="cal-list-view" aria-pressed="false">{{ t('List view') }}</button></div>
+        <button type="button" class="btn" id="cal-refresh">{{ t('Refresh') }}</button>
+      </div>
+    </div>
+    <h2 id="cal-heading" aria-live="polite"></h2>
+    <p id="cal-message" role="status" aria-live="polite"></p>
+    <div class="calendar-totals" id="cal-totals"></div>
+    <div class="calendar-key"><span class="badge ok">{{ t('שולם') }}</span><span class="badge open">{{ t('פתוח') }}</span><span class="badge warn">{{ t('לתשלום בקרוב') }}</span><span class="badge late">{{ t('באיחור') }}</span></div>
+    <div id="cal-month-view" class="calendar-scroll" tabindex="0" aria-label="{{ t('Monthly payment calendar. Scroll sideways on small screens.') }}"><div id="cal-grid" class="calendar-grid"></div></div>
+    <div id="cal-agenda" hidden></div>
+    <p class="muted">{{ t('Dates are due dates, not the actual day money was transferred. Only saved bills are shown; future recurring payments appear after they are created.') }}</p>
+  </section>
+  <dialog id="cal-dialog" class="calendar-dialog" aria-labelledby="cal-detail-title">
+    <div class="modal-head"><h2 id="cal-detail-title"></h2><button type="button" class="btn" id="cal-close">{{ t('סגירה') }}</button></div>
+    <div id="cal-detail"></div>
+    <a class="btn primary" href="{{ url_for('bills_page') }}">{{ t('Manage bills') }}</a>
+  </dialog>
+</main>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/calendar.js', v='calendar1') }}"></script>{% endblock %}
