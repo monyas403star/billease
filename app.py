@@ -197,6 +197,13 @@ def bills_page():
     return render_template("bills.html", user=current_user())
 
 
+@app.route("/calendar")
+def calendar_page():
+    if not need_login():
+        return redirect(url_for("root"))
+    return render_template("calendar.html", user=current_user())
+
+
 @app.route("/reports")
 def reports_page():
     if not need_login():
