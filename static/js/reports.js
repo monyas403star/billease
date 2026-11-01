@@ -59,6 +59,45 @@ function renderInsights() {
   document.getElementById('money-insights').innerHTML=insights.map(([title,text])=>`<article class="insight-item"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p></article>`).join('');
 }
 
+function categoryShares(categories) {
+  const entries=Object.entries(categories).map(([name,amount])=>({name,cents:Math.round(Number(amount)*100)})).filter(row=>Number.isFinite(row.cents)&&row.cents>0);
+  const total=entries.reduce((sum,row)=>sum+row.cents,0);
+  return entries.map(row=>({...row,amount:row.cents/100,share:row.cents/total}));
+}
+function shareLabel(share) {
+  return new Intl.NumberFormat(uiLocale(),{style:'percent',maximumFractionDigits:1}).format(share);
+}
+function renderCategoryShares(categories) {
+  const rows=categoryShares(categories);
+  document.getElementById('category-share-body').innerHTML=rows.length
+    ? rows.map(row=>`<tr><td>${escapeHtml(categoryLabel(row.name))}</td><td>${escapeHtml(fmtMoney(row.amount))}</td><td>${escapeHtml(shareLabel(row.share))}</td></tr>`).join('')
+    : `<tr><td colspan="3" class="muted">${escapeHtml(t('No category amounts in selected year.'))}</td></tr>`;
+  return rows;
+}
+// Labels are local to this chart; no additional external plugin is required.
+const categoryPercentPlugin={
+  id:'categoryPercentLabels',
+  afterDatasetsDraw(chart) {
+    const values=chart.data.datasets[0].data;
+    const total=values.reduce((sum,value)=>sum+Number(value),0);
+    if(!total)return;
+    const ctx=chart.ctx;ctx.save();
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px Heebo, sans-serif';
+    chart.getDatasetMeta(0).data.forEach((arc,index)=>{
+      if(!chart.getDataVisibility(index))return;
+      const share=Number(values[index])/total;
+      if(share<0.04 || arc.circumference<0.18)return; // Small slices remain in the table and tooltip.
+      const angle=(arc.startAngle+arc.endAngle)/2;
+      const radius=(arc.innerRadius+arc.outerRadius)/2;
+      const x=arc.x+Math.cos(angle)*radius,y=arc.y+Math.sin(angle)*radius;
+      const label=shareLabel(share);
+      ctx.lineWidth=3;ctx.strokeStyle='rgba(15,23,42,.85)';ctx.strokeText(label,x,y);
+      ctx.fillStyle='#fff';ctx.fillText(label,x,y);
+    });
+    ctx.restore();
+  }
+};
+
 async function loadReport() {
   if(reportBusy)return;
   if(!yearInput.checkValidity() || !year2Input.checkValidity()) {yearInput.reportValidity();year2Input.reportValidity();return;}
@@ -77,6 +116,7 @@ async function loadReport() {
 
   if (bills.ok) allBills = bills.bills;
 
+  const categoryRows=renderCategoryShares(summary.categories);
   if(typeof Chart !== 'undefined') {
   // monthly bar with click handler
   const monthCtx = document.getElementById("month-chart").getContext("2d");
@@ -107,15 +147,20 @@ async function loadReport() {
   // category donut
   const catCtx = document.getElementById("cat-chart").getContext("2d");
   if (catChart) catChart.destroy();
-  const catNames = Object.keys(summary.categories);
-  const catValues = Object.values(summary.categories);
+  const catValues = categoryRows.map(row=>row.amount);
   const colors = ["#4f46e5","#06b6d4","#f59e0b","#ef4444",
                   "#8b5cf6","#10b981","#6366f1","#f97316",
                   "#ec4899","#6b7280"];
   catChart = new Chart(catCtx, {
     type: "doughnut",
-    data: { labels: catNames.map(categoryLabel), datasets: [{ data: catValues, backgroundColor: colors }] },
-    options: { responsive: true, maintainAspectRatio: false }
+    data: { labels: categoryRows.map(row=>`${categoryLabel(row.name)} — ${shareLabel(row.share)}`), datasets: [{ data: catValues, backgroundColor: colors }] },
+    plugins:[categoryPercentPlugin],
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins:{tooltip:{callbacks:{label:context=>{
+        const row=categoryRows[context.dataIndex];
+        return `${categoryLabel(row.name)}: ${fmtMoney(row.amount)} (${shareLabel(row.share)})`;
+      }}}}
+    }
   });
 
   // year-over-year line
@@ -145,6 +190,7 @@ async function loadReport() {
     document.getElementById('report-error').textContent=t('Reports could not load. Please try again.');
     for(const id of ['annual-total','annual-paid','annual-open','annual-change'])document.getElementById(id).textContent='—';
     document.getElementById('money-insights').replaceChildren();
+    document.getElementById('category-share-body').replaceChildren();
   } finally {reportBusy=false;loadBtn.disabled=false;}
 }
 
