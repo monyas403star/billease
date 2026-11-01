@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
 {% block title %}{{ t('Provider payment portal') }} - BillEase{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/payment_portal.css', v='providers1') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/payment_portal.css', v='categorybuttons1') }}">
 {% include "_nav.html" %}
 <main class="page">
   <div class="page-head"><h1>{{ t('Provider payment portal') }}</h1><p class="muted">{{ t('Find the provider on your bill and open its official payment or service website.') }}</p></div>
@@ -16,9 +16,11 @@
     <a class="link-btn" href="{{ url_for('bills_page') }}">{{ t('Return to my bills') }}</a>
   </section>
   <section class="card provider-search">
+    <h2>{{ t('Choose a service') }}</h2>
+    <div id="provider-category-buttons" class="provider-categories" role="group" aria-label="{{ t('Service category') }}"></div>
     <div class="provider-search-fields">
       <label>{{ t('Search providers') }}<input id="provider-search" type="search" maxlength="120" placeholder="{{ t('Name, city or service in Hebrew, Arabic or English') }}"></label>
-      <label>{{ t('Service category') }}<select id="provider-category"><option value="all">{{ t('All services') }}</option></select></label>
+      <div hidden><label>{{ t('Service category') }}<select id="provider-category"><option value="all">{{ t('All services') }}</option></select></label></div>
       <label>{{ t('Directory view') }}<select id="provider-view"><option value="all">{{ t('All destinations') }}</option><option value="favorites">{{ t('My favorites') }}</option><option value="recent">{{ t('Recently requested destinations') }}</option><option value="payment">{{ t('Payment pages and instructions') }}</option></select></label>
       <button type="button" class="btn" id="provider-clear">{{ t('Clear filters') }}</button>
       <button type="button" class="btn" id="provider-retry">{{ t('Refresh') }}</button>
@@ -39,4 +41,4 @@
   </dialog>
 </main>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='js/payment_portal.js', v='providers1') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/payment_portal.js', v='categorybuttons1') }}"></script>{% endblock %}
