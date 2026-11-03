@@ -37,6 +37,28 @@
     <p class="muted">{{ t('Budget excess is an amount to review, not guaranteed savings. Missing bills can affect comparisons.') }}</p>
   </section>
 
+  <section class="card savings-panel" aria-labelledby="savings-title">
+    <h2 id="savings-title">{{ t('Savings opportunities') }}</h2>
+    <p>{{ t('Explore a lower recurring price and see its monthly and annual impact.') }}</p>
+    <p class="muted">{{ t('This scenario uses your latest saved recurring records across all years, independently of the report year. Monthly prices are multiplied by 12; yearly prices are counted once.') }}</p>
+    <div class="savings-summary">
+      <div><p>{{ t('Annual cost before alternatives') }}</p><strong id="savings-baseline">—</strong></div>
+      <div><p>{{ t('Annual cost with alternatives') }}</p><strong id="savings-alternative">—</strong></div>
+      <div><p>{{ t('Estimated monthly reduction (average)') }}</p><strong id="savings-monthly">—</strong></div>
+      <div><p>{{ t('Estimated annual reduction') }}</p><strong id="savings-annual">—</strong></div>
+    </div>
+    <p id="savings-count" role="status" aria-live="polite"></p>
+    <p class="muted">{{ t('Alternative prices are entered by you, not supplier offers. Estimates assume unchanged prices for 12 months, exclude switching or cancellation fees, and are not guaranteed savings. Zero models cancellation; check your contract first.') }}</p>
+    <p class="muted">{{ t('Scenarios are not saved. They do not change bills or mark payments. One baseline is shown per supplier, category and frequency; multiple contracts may need separate review.') }}</p>
+    <div class="savings-actions">
+      <button class="btn" type="button" id="savings-reload">{{ t('Reload recurring bills') }}</button>
+      <button class="btn" type="button" id="savings-reset">{{ t('Clear alternatives') }}</button>
+      <a class="btn primary" href="{{ url_for('payment_portal_page') }}">{{ t('Review supplier options') }}</a>
+    </div>
+    <p id="savings-status" role="status" aria-live="polite"></p>
+    <div id="savings-list" class="savings-list"></div>
+  </section>
+
   <section class="grid-2">
     <div class="card">
       <h2>{{ t("הוצאות חודשיות") }}</h2>
@@ -97,6 +119,9 @@
 </main>
 {% endblock %}
 {% block scripts %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/savings.css', v='savings1') }}">
+<script src="{{ url_for('static', filename='js/savings.js', v='savings1') }}"></script>
+<script src="{{ url_for('static', filename='js/savings_ui.js', v='savings1') }}"></script>
 <script src="{{ url_for('static', filename='js/insights.js', v='business1') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="{{ url_for('static', filename='js/reports.js', v='pie1') }}"></script>
