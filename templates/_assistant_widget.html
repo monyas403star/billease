@@ -1,0 +1,38 @@
+{% if user %}
+<div id="chat-widget" data-owner="{{ user.user_id }}" data-version="{{ session.get('auth_version', 0) }}" data-locale="{{ locale }}">
+  <button id="chat-launcher" class="chat-launcher" type="button" aria-controls="chat-panel" aria-expanded="false" aria-label="{{ t('Open AI chat') }}">
+    <svg viewBox="0 0 24 24" width="25" height="25" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7 9h10M7 13h7" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span>{{ t('AI assistant') }}</span>
+  </button>
+  <section id="chat-panel" class="chat-panel" role="dialog" aria-labelledby="chat-title" hidden>
+    <header class="chat-header">
+      <h2 id="chat-title">{{ t('AI assistant') }}</h2>
+      <button type="button" id="chat-close" class="chat-icon-button" aria-label="{{ t('Close AI chat') }}">×</button>
+    </header>
+    <div class="chat-controls">
+      <label for="chat-year">{{ t('Year') }}<input id="chat-year" type="number" min="2000" max="2300" required></label>
+      <label for="chat-month">{{ t('Month') }}<select id="chat-month"><option value="0">{{ t('Whole year') }}</option></select></label>
+      <button id="chat-clear" class="btn small" type="button">{{ t('Clear chat') }}</button>
+    </div>
+    <div id="chat-history" class="chat-history" tabindex="0" aria-label="{{ t('Chat history') }}">
+      <p id="chat-welcome">{{ t('Ask about your saved bills, spending categories and budget alerts.') }}</p>
+    </div>
+    <div class="chat-prompts">
+      <button type="button" data-chat-question="{{ t('How much is still open in the selected period?') }}">{{ t('Open bills') }}</button>
+      <button type="button" data-chat-question="{{ t('Have I exceeded any monthly budgets?') }}">{{ t('Budget alerts') }}</button>
+    </div>
+    <form id="chat-form" class="chat-form">
+      <label for="chat-question">{{ t('Your question') }}</label>
+      <textarea id="chat-question" rows="2" maxlength="700" required placeholder="{{ t('Type a question about your bills...') }}"></textarea>
+      <button id="chat-send" class="btn primary" type="submit">{{ t('Ask the assistant') }}</button>
+    </form>
+    <p id="chat-status" class="chat-status" role="status" aria-live="polite"></p>
+    <details class="chat-notice"><summary>{{ t('About this chat') }}</summary>
+      <p>{{ t('When you ask, your question and summarized amounts are sent to OpenAI. Your identity, bill images and supplier names are not sent automatically. Avoid entering personal details.') }}</p>
+      <p>{{ t('Chat stays in this browser tab while you browse and is cleared on logout. Each question uses fresh account totals; previous messages are not sent to the AI.') }}</p>
+      <p>{{ t('AI can make mistakes. Check these calculated facts and your original bills before making a decision. The assistant cannot pay, edit or delete bills, and it does not verify supplier offers.') }}</p>
+      <a href="{{ url_for('assistant_page') }}">{{ t('Open detailed account facts') }}</a>
+    </details>
+  </section>
+</div>
+{% endif %}
