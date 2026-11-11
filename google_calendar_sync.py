@@ -219,6 +219,13 @@ def setup(app, need_login):
                  saved.get('version')==session.get('auth_version') and saved.get('expires',0)>time.time() and
                  secrets.compare_digest(saved.get('state',''),request.args.get('state','')) and bool(saved.get('state')))
         target = '/calendar?google=error'
+        app.logger.warning(
+            "[Google Calendar] callback check: valid=%s saved=%s denied=%s configured=%s",
+            bool(valid),
+            bool(saved),
+            bool(request.args.get('error')),
+            configured()
+        )
         if valid and not request.args.get('error') and configured():
             # One OAuth flow at a time per account; existing links must be disconnected explicitly.
             conn=db.get_conn()
