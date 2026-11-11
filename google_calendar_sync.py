@@ -247,8 +247,11 @@ def setup(app, need_login):
                         (session['user_id'],encrypted,response.json()['id'],secrets.token_hex(16)))
                     target='/calendar?google=connected'
                 WAKE.set()
-            except Exception:
-                pass
+            except Exception as exc:
+                app.logger.error(
+                    "[Google Calendar] callback failed: %s",
+                    type(exc).__name__
+                )
             finally:
                 conn.close()
         response=redirect(target,303)
