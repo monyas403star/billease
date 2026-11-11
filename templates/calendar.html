@@ -5,6 +5,15 @@
 {% include "_nav.html" %}
 <main class="page">
   <div class="page-head"><h1>{{ t('Payment calendar') }}</h1><p class="muted">{{ t('See your saved bills on their due dates. Select a payment to view its details.') }}</p></div>
+  <section class="card" id="google-calendar-link">
+    <h2>{{ t('Connect your phone calendar') }}</h2>
+    <p>{{ t('Connect Google once. Saved bills and installments will appear automatically in a separate BillEase calendar. Use the same Google account on your phone and computer and enable this calendar.') }}</p>
+    <p class="muted">{{ t('BillEase sends supplier, amount, due date and payment status to Google. Changes are one-way from BillEase. Device sync can take time. Calendar reminders are not enabled automatically.') }}</p>
+    <p id="google-cal-status" role="status" aria-live="polite">{{ t('Loading calendar connection...') }}</p>
+    <button type="button" class="btn primary" id="google-cal-connect" hidden>{{ t('Connect Google Calendar') }}</button>
+    <button type="button" class="btn danger" id="google-cal-disconnect" hidden>{{ t('Disconnect calendar') }}</button>
+    <p class="muted">{{ t('Disconnecting stops future updates but leaves existing events in Google. Remove the old BillEase calendar in Google before reconnecting to avoid two calendars.') }}</p>
+  </section>
   <section class="card">
     <div class="calendar-toolbar">
       <div class="calendar-controls">
@@ -34,4 +43,4 @@
   </dialog>
 </main>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='js/calendar.js', v='calendar1') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/calendar.js', v='calendar1') }}"></script><script src="{{ url_for('static', filename='js/google_calendar.js', v='google1') }}"></script>{% endblock %}
