@@ -1090,6 +1090,9 @@ def internal_error(e):
     app.logger.error("Internal server error", exc_info=True)
     return jsonify(ok=False, error="אירעה שגיאה פנימית. נסו שוב מאוחר יותר"), 500
 
+import google_calendar_sync
+google_calendar_sync.setup(app, need_login)
+
 # start the background reminder thread (won't double-start)
 scheduler.start()
 
