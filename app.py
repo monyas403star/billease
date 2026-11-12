@@ -1093,6 +1093,9 @@ def internal_error(e):
 import google_calendar_sync
 google_calendar_sync.setup(app, need_login)
 
+import budget_planner
+budget_planner.setup(app, need_login, current_user)
+
 # start the background reminder thread (won't double-start)
 scheduler.start()
 
