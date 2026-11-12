@@ -248,9 +248,22 @@ def setup(app, need_login):
                     target='/calendar?google=connected'
                 WAKE.set()
             except Exception as exc:
+                tb = exc.__traceback__
+                while tb and tb.tb_next:
+                    tb = tb.tb_next
+
+                reason = (
+                    str(exc)
+                    if str(exc) in ("grant", "calendar")
+                    else "other"
+                )
+
                 app.logger.error(
-                    "[Google Calendar] callback failed: %s",
-                    type(exc).__name__
+                    "[Google Calendar] failed: type=%s reason=%s file=%s line=%s",
+                    type(exc).__name__,
+                    reason,
+                    os.path.basename(tb.tb_frame.f_code.co_filename) if tb else "-",
+                    tb.tb_lineno if tb else 0
                 )
             finally:
                 conn.close()
