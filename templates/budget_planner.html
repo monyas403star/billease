@@ -1,0 +1,21 @@
+{% extends '_base.html' %}
+{% block title %}{{ t('My money plan') }} - BillEase{% endblock %}
+{% block content %}
+{% include '_nav.html' %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/budget_planner.css') }}">
+<main class="page bp-page">
+  <div class="page-head"><h1>{{ t('My money plan') }}</h1><p>{{ t('One question at a time. Discover what could remain each month.') }}</p></div>
+  <div id="bp-message" role="status" aria-live="polite"></div>
+  <section class="card bp-card" id="bp-wizard" aria-busy="true">
+    <div class="bp-progress-head"><span id="bp-stage"></span><span id="bp-counter"></span></div>
+    <progress id="bp-progress" value="0" max="20"></progress>
+    <h2 id="bp-question" tabindex="-1">{{ t('Loading your plan...') }}</h2>
+    <p id="bp-help" class="muted"></p>
+    <div id="bp-content"></div>
+    <div class="bp-controls"><button type="button" class="btn" id="bp-back">{{ t('Back') }}</button><button type="button" class="btn" id="bp-skip">{{ t('No additional expense') }}</button><button type="button" class="btn primary" id="bp-next">{{ t('Next') }}</button></div>
+    <p class="muted">{{ t('Your answers are saved when you press Next or Back. You can return and edit them.') }}</p>
+  </section>
+  <section class="card bp-card" id="bp-results" hidden></section>
+</main>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/budget_planner.js') }}"></script>{% endblock %}
