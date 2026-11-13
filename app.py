@@ -1103,6 +1103,9 @@ google_calendar_sync.setup(app, need_login)
 import budget_planner
 budget_planner.setup(app, need_login, current_user)
 
+import user_feedback
+user_feedback.setup(app, need_login, current_user, is_admin)
+
 # start the background reminder thread (won't double-start)
 scheduler.start()
 
