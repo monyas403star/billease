@@ -1066,7 +1066,7 @@ def api_admin_users():
     if err:
         return err
     rows = db.query(
-        "SELECT u.user_id, u.full_name, u.email, u.phone, u.is_admin, u.created_at, "
+        "SELECT u.full_name, u.email, u.is_admin, u.created_at, "
         "(SELECT COUNT(*) FROM bills b WHERE b.user_id=u.user_id) AS bill_count "
         "FROM users u ORDER BY u.created_at DESC",
         fetch=True,
@@ -1082,15 +1082,7 @@ def api_admin_ocr_log():
     err = _need_admin()
     if err:
         return err
-    rows = db.query(
-        "SELECT log_id, user_id, image_path, parsed_ok, note, created_at "
-        "FROM ocr_log ORDER BY created_at DESC LIMIT 200",
-        fetch=True,
-    )
-    for r in rows:
-        r["created_at"] = str(r["created_at"])
-        r["parsed_ok"] = bool(r["parsed_ok"])
-    return jsonify(ok=True, log=rows)
+    return jsonify(ok=False, error="This endpoint is no longer available"), 410
 
 @app.errorhandler(500)
 def internal_error(e):
