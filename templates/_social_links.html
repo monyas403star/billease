@@ -1,0 +1,14 @@
+{% set social_heading = {'ar': 'تابعوا BillEase', 'he': 'עקבו אחרי BillEase', 'en': 'Follow BillEase'} %}
+<footer class="billease-social">
+  <p>{{ social_heading.get(locale, social_heading['he']) }}</p>
+  <nav aria-label="{{ social_heading.get(locale, social_heading['he']) }}">
+    <a href="https://www.instagram.com/bill.easeapp/" target="_blank" rel="noopener noreferrer" dir="ltr">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+      <span>Instagram</span>
+    </a>
+    <a href="https://www.facebook.com/share/19s1PQ43k9/" target="_blank" rel="noopener noreferrer" dir="ltr">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M14 21v-8h3l.5-3H14V8c0-.9.3-1.5 1.6-1.5H18V3.2A27 27 0 0 0 15.3 3C12.6 3 11 4.6 11 7.6V10H8v3h3v8z"/></svg>
+      <span>Facebook</span>
+    </a>
+  </nav>
+</footer>
