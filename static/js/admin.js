@@ -9,8 +9,6 @@ async function load() {
   if (stats.ok) {
     document.getElementById("adm-users").textContent = stats.users;
     document.getElementById("adm-bills").textContent = stats.bills;
-    document.getElementById("adm-ocr").textContent = stats.ocr_scans;
-    document.getElementById("adm-fails").textContent = stats.ocr_fails;
     document.getElementById("adm-signups").textContent = stats.signups_today;
     document.getElementById("adm-today-bills").textContent = stats.bills_today;
 
