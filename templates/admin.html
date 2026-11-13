@@ -25,20 +25,6 @@
       <p class="label">{{ t("סה\"כ חשבונות") }}</p>
       <p class="value" id="adm-bills">--</p>
     </div>
-    <div class="stat-card">
-      <div class="stat-icon bg-green">
-        <svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19l12-12-1.4-1.4z"/></svg>
-      </div>
-      <p class="label">{{ t("סריקות OCR") }}</p>
-      <p class="value" id="adm-ocr">--</p>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon bg-orange">
-        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 11h-2V7h2z"/></svg>
-      </div>
-      <p class="label">{{ t("סריקות שנכשלו") }}</p>
-      <p class="value" id="adm-fails">--</p>
-    </div>
   </section>
 
   <section class="card">
@@ -86,5 +72,5 @@
 </main>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/admin.js', v='accountplans1') }}"></script>
+<script src="{{ url_for('static', filename='js/admin.js', v='admincounts2') }}"></script>
 {% endblock %}
