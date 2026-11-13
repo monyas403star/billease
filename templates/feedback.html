@@ -1,0 +1,35 @@
+{% extends '_base.html' %}
+{% block title %}{{ t('Your feedback helps us') }} - BillEase{% endblock %}
+{% block content %}
+{% include '_nav.html' %}
+<main class="page feedback-page">
+  <h1>{{ t('Your feedback helps us') }}</h1>
+  <p class="muted">{{ t('Tell us about your experience so we can improve BillEase.') }}</p>
+  <section class="card">
+    <p class="feedback-notice">{{ t('Your feedback and account name are visible only to administrators. Do not include passwords, identity numbers or payment details.') }}</p>
+    {% if saved %}<p class="form-msg ok" role="status">{{ t('Thank you! Your feedback has been saved.') }}</p>{% endif %}
+    {% if error %}<p class="form-msg err" role="alert">{{ t(error) }}</p>{% endif %}
+    <form class="form feedback-form" method="post" action="{{ url_for('feedback_page') }}">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <fieldset><legend>{{ t('How easy was the website to use?') }}</legend>
+        <p class="muted">{{ t('1 = very difficult, 5 = very easy') }}</p>
+        <div class="feedback-ratings">{% for n in range(1,6) %}<label><input type="radio" name="rating" value="{{ n }}" required {% if values.rating|string == n|string %}checked{% endif %}><span>{{ n }}</span></label>{% endfor %}</div>
+      </fieldset>
+      <label for="feedback-helpful">{{ t('Which feature helped you most, and why?') }}</label>
+      <textarea id="feedback-helpful" name="helpful" rows="3" maxlength="1000" required>{{ values.helpful }}</textarea>
+      <label for="feedback-problem">{{ t('Did you encounter a problem?') }}</label>
+      <select id="feedback-problem" name="had_issue" required>
+        <option value="">{{ t('Choose an answer') }}</option>
+        <option value="0" {% if values.had_issue|string == '0' %}selected{% endif %}>{{ t('No') }}</option>
+        <option value="1" {% if values.had_issue|string == '1' %}selected{% endif %}>{{ t('Yes') }}</option>
+      </select>
+      <div id="feedback-issue-wrap"><label for="feedback-issue">{{ t('If yes, what happened and on which page?') }}</label><textarea id="feedback-issue" name="issue" rows="4" maxlength="2000">{{ values.issue }}</textarea></div>
+      <label for="feedback-suggestion">{{ t('What would you improve or add? (optional)') }}</label>
+      <textarea id="feedback-suggestion" name="suggestion" rows="4" maxlength="2000">{{ values.suggestion }}</textarea>
+      <p class="muted">{{ t('You can return and edit your response. Saving again updates your previous feedback.') }}</p>
+      <button class="btn primary" type="submit">{{ t('Save feedback') }}</button>
+    </form>
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/feedback.js', v='feedback1') }}"></script>{% endblock %}

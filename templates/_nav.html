@@ -1,1 +1,7 @@
-<header class="topbar"><a class="brand" href="{{ url_for('home_page') }}" aria-label="{{ t('Home screen') }}"><img src="{{ url_for('static', filename='img/logo.svg') }}" alt=""><span>BillEase</span></a><a class="btn small" href="{{ url_for('logout') }}">{{ t('התנתקות') }}</a></header>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('home_page') }}" aria-label="{{ t('Home screen') }}"><img src="{{ url_for('static', filename='img/logo.svg') }}" alt=""><span>BillEase</span></a>
+  <nav class="header-actions" aria-label="{{ t('Account actions') }}">
+    <a class="btn small" href="{{ url_for('feedback_page') }}" {% if request.endpoint == 'feedback_page' %}aria-current="page"{% endif %}>{{ t('Your feedback helps us') }}</a>
+    <a class="btn small" href="{{ url_for('logout') }}">{{ t('התנתקות') }}</a>
+  </nav>
+</header>

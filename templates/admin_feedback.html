@@ -1,0 +1,28 @@
+{% extends '_base.html' %}
+{% block title %}{{ t('User feedback') }} - BillEase{% endblock %}
+{% block content %}
+{% include '_nav.html' %}
+<main class="page feedback-page">
+  <h1>{{ t('User feedback') }}</h1>
+  <p><a class="btn" href="{{ url_for('admin_page') }}">{{ t('Back to administration') }}</a></p>
+  <section class="stats">
+    <div class="stat-card"><p>{{ t('Participants') }}</p><strong class="value">{{ stats.total }}</strong></div>
+    <div class="stat-card"><p>{{ t('Average ease rating') }}</p><strong class="value">{{ ('%.1f / 5'|format(stats.average)) if stats.total else '—' }}</strong></div>
+    <div class="stat-card"><p>{{ t('Users reporting a problem') }}</p><strong class="value">{{ stats.issues }}</strong></div>
+  </section>
+  <p class="muted">{{ t('One latest response per account. These ratings reflect participants, not all potential users.') }}</p>
+  {% for row in rows %}<article class="card feedback-entry">
+    <h2>{{ row.full_name or t('User') }} · {{ row.rating }} / 5</h2>
+    <p class="muted">{{ t('Last updated (UTC)') }}: <bdi>{{ row.updated_at }}</bdi></p>
+    <h3>{{ t('Which feature helped you most, and why?') }}</h3><p class="feedback-text">{{ row.helpful }}</p>
+    <h3>{{ t('Did you encounter a problem?') }}</h3><p>{{ t('Yes') if row.had_issue else t('No') }}</p>
+    {% if row.had_issue %}<p class="feedback-text">{{ row.issue }}</p>{% endif %}
+    {% if row.suggestion %}<h3>{{ t('Suggested improvement') }}</h3><p class="feedback-text">{{ row.suggestion }}</p>{% endif %}
+  </article>{% else %}<section class="card">{{ t('No feedback yet. Invite users to try the website and share their experience.') }}</section>{% endfor %}
+  <nav class="feedback-pages" aria-label="{{ t('Feedback pages') }}">
+  {% if page > 1 %}<a class="btn" href="{{ url_for('admin_feedback_page', page=page-1) }}">{{ t('Back') }}</a>{% endif %}
+  <span>{{ page }} / {{ pages }}</span>
+  {% if page < pages %}<a class="btn" href="{{ url_for('admin_feedback_page', page=page+1) }}">{{ t('Next') }}</a>{% endif %}
+  </nav>
+</main>
+{% endblock %}
