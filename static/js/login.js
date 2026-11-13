@@ -40,7 +40,7 @@ form.addEventListener("submit", async (e) => {
       true
     );
 
-    window.location.href = isAdmin ? "/admin" : "/dashboard";
+    window.location.href = isAdmin ? "/admin" : "/home";
   } catch (error) {
     showMsg(msg, t("שגיאת תקשורת. נסו שוב."), false);
   } finally {

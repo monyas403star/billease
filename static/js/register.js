@@ -9,7 +9,7 @@ form.addEventListener("submit", async (e) => {
   if (res.ok) {
     showMsg(msg, t("החשבון נפתח! מעבר ללוח הבקרה..."), true);
     setTimeout(() => {
-      window.location.href = res.redirect || "/dashboard";
+      window.location.href = res.redirect || "/home";
     }, 1200);
   } else {
     showMsg(msg, res.error || t("ההרשמה נכשלה"), false);
