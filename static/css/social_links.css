@@ -1,0 +1,7 @@
+.billease-social{margin:24px auto 0;padding:20px 20px 100px;text-align:center;color:#52627e}
+.billease-social p{margin:0 0 12px;font-weight:600}
+.billease-social nav{display:flex;justify-content:center;flex-wrap:wrap;gap:12px}
+.billease-social a{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 16px;border:1px solid #dce3ef;border-radius:12px;background:#fff;color:#243b63;text-decoration:none}
+.billease-social a:hover{background:#f0edff;border-color:#5143ed;color:#4031ca}
+.billease-social a:focus-visible{outline:3px solid #5143ed;outline-offset:3px}
+.billease-social svg{width:24px;height:24px;flex-shrink:0}
