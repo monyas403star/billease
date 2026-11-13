@@ -1,0 +1,15 @@
+{% extends '_base.html' %}
+{% block title %}{{ t('Home screen') }} - BillEase{% endblock %}
+{% block content %}{% include '_nav.html' %}
+<main class="page home-page"><div class="home-heading"><p>BillEase · {{ user.full_name }}</p><h1>{{ t('Where would you like to go?') }}</h1><p class="muted">{{ t('Choose a card to get started.') }}</p></div><nav class="home-grid" aria-label="{{ t('Home screen') }}">
+    <a class="home-tile tone-0" href="{{ url_for('dashboard_page') }}"><span aria-hidden="true">📊</span><h2>{{ t('Account overview') }}</h2></a>
+    <a class="home-tile tone-1" href="{{ url_for('add_bill_page') }}"><span aria-hidden="true">📷</span><h2>{{ t('Add or scan a bill') }}</h2></a>
+    <a class="home-tile tone-2" href="{{ url_for('bills_page') }}"><span aria-hidden="true">🧾</span><h2>{{ t('My bills') }}</h2></a>
+    <a class="home-tile tone-3" href="{{ url_for('budget_planner_page') }}"><span aria-hidden="true">💰</span><h2>{{ t('My money plan') }}</h2></a>
+    <a class="home-tile tone-0" href="{{ url_for('calendar_page') }}"><span aria-hidden="true">📅</span><h2>{{ t('Payment calendar') }}</h2></a>
+    <a class="home-tile tone-1" href="{{ url_for('reports_page') }}"><span aria-hidden="true">📈</span><h2>{{ t('Reports and savings') }}</h2></a>
+    <a class="home-tile tone-2" href="{{ url_for('payment_portal_page') }}"><span aria-hidden="true">🏢</span><h2>{{ t('Providers and payments') }}</h2></a>
+    <a class="home-tile tone-3" href="{{ url_for('profile_page') }}"><span aria-hidden="true">👤</span><h2>{{ t('Account and settings') }}</h2></a>
+    <a class="home-tile tone-0" href="{{ url_for('ocr_log_page') }}"><span aria-hidden="true">🔎</span><h2>{{ t('Scan history') }}</h2></a>
+{% if user.is_admin %}<a class="home-tile tone-0" href="{{ url_for('admin_page') }}"><span aria-hidden="true">🛡️</span><h2>{{ t('Administration') }}</h2></a>{% endif %}
+</nav></main>{% endblock %}
