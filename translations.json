@@ -656,7 +656,18 @@
     "Additional categories above exclude saved bills. Check the bill list below to avoid entering the same cost twice.": "הקטגוריות לעיל כוללות רק הוצאות נוספות. בדקו את רשימת החשבונות כדי לא להזין אותה הוצאה פעמיים.",
     "Edit my answers": "עריכת התשובות",
     "Could not load. Sign in and refresh the page.": "הטעינה נכשלה. התחברו ורעננו את הדף.",
-    "Check the names, amounts and dates.": "בדקו שמות, סכומים ותאריכים."
+    "Check the names, amounts and dates.": "בדקו שמות, סכומים ותאריכים.",
+    "Home screen": "מסך הבית",
+    "Where would you like to go?": "לאן תרצו להיכנס היום?",
+    "Choose a card to get started.": "בחרו כרטיס כדי להתחיל.",
+    "Back to home screen": "חזרה למסך הבית",
+    "Account overview": "סיכום החשבון",
+    "Add or scan a bill": "הוספה או סריקת חשבון",
+    "My bills": "החשבונות שלי",
+    "Reports and savings": "דוחות וחיסכון",
+    "Providers and payments": "ספקים ותשלומים",
+    "Account and settings": "החשבון וההגדרות",
+    "Administration": "ניהול"
   },
   "ar": {
     "דשבורד": "لوحة التحكم",
@@ -1315,7 +1326,18 @@
     "Additional categories above exclude saved bills. Check the bill list below to avoid entering the same cost twice.": "الفئات أعلاه للمصاريف الإضافية ولا تشمل الفواتير المحفوظة. راجع قائمة الفواتير لتجنب إدخال المصروف مرتين.",
     "Edit my answers": "تعديل إجاباتي",
     "Could not load. Sign in and refresh the page.": "تعذّر التحميل. سجّل الدخول وحدّث الصفحة.",
-    "Check the names, amounts and dates.": "راجع الأسماء والمبالغ والتواريخ."
+    "Check the names, amounts and dates.": "راجع الأسماء والمبالغ والتواريخ.",
+    "Home screen": "الشاشة الرئيسية",
+    "Where would you like to go?": "وين بدك تفوت اليوم؟",
+    "Choose a card to get started.": "اختار بطاقة للبدء.",
+    "Back to home screen": "رجوع للرئيسية",
+    "Account overview": "ملخّص حسابي",
+    "Add or scan a bill": "إضافة أو مسح فاتورة",
+    "My bills": "فواتيري",
+    "Reports and savings": "التقارير والتوفير",
+    "Providers and payments": "الشركات والدفع",
+    "Account and settings": "حسابي والإعدادات",
+    "Administration": "الإدارة"
   },
   "en": {
     "דשבורד": "Dashboard",
@@ -1974,6 +1996,17 @@
     "Additional categories above exclude saved bills. Check the bill list below to avoid entering the same cost twice.": "Additional categories above exclude saved bills. Check the bill list below to avoid entering the same cost twice.",
     "Edit my answers": "Edit my answers",
     "Could not load. Sign in and refresh the page.": "Could not load. Sign in and refresh the page.",
-    "Check the names, amounts and dates.": "Check the names, amounts and dates."
+    "Check the names, amounts and dates.": "Check the names, amounts and dates.",
+    "Home screen": "Home screen",
+    "Where would you like to go?": "Where would you like to go?",
+    "Choose a card to get started.": "Choose a card to get started.",
+    "Back to home screen": "Back to home screen",
+    "Account overview": "Account overview",
+    "Add or scan a bill": "Add or scan a bill",
+    "My bills": "My bills",
+    "Reports and savings": "Reports and savings",
+    "Providers and payments": "Providers and payments",
+    "Account and settings": "Account and settings",
+    "Administration": "Administration"
   }
 }

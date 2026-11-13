@@ -165,7 +165,7 @@ def add_months(d, months):
 @app.route("/")
 def root():
     if need_login():
-        return redirect(url_for("dashboard_page"))
+        return redirect(url_for("home_page"))
     return render_template("login.html")
 
 
@@ -177,6 +177,13 @@ def register_page():
 @app.route("/recover")
 def recover_page():
     return render_template("recover.html")
+
+
+@app.route("/home")
+def home_page():
+    if not need_login():
+        return redirect(url_for("root"))
+    return render_template("home.html", user=current_user())
 
 
 @app.route("/dashboard")
@@ -386,7 +393,7 @@ def api_register():
     session.clear()
     session.update(user_id=user_id, full_name=name, auth_version=security.version(user_id))
     i18n.use_language(preferred_language)
-    return jsonify(ok=True, language=preferred_language, redirect=url_for("dashboard_page"))
+    return jsonify(ok=True, language=preferred_language, redirect=url_for("home_page"))
 
 
 @app.route("/api/login", methods=["POST"])
