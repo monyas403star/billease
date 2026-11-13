@@ -1,9 +1,8 @@
 // admin dashboard (אפיון 11.2)
 async function load() {
-  const [stats, users, log] = await Promise.all([
+  const [stats, users] = await Promise.all([
     apiGet("/api/admin/stats"),
     apiGet("/api/admin/users"),
-    apiGet("/api/admin/ocr-log"),
   ]);
 
   if (stats.ok) {
@@ -29,7 +28,6 @@ async function load() {
     const tbody = document.getElementById("adm-users-tbl");
     tbody.innerHTML = users.users.map(u => `
       <tr>
-        <td>${escapeHtml(u.user_id || "")}</td>
         <td>${escapeHtml(u.full_name || "")}</td>
         <td>${escapeHtml(u.email || "")}</td>
         <td>${u.bill_count}</td>
@@ -38,20 +36,5 @@ async function load() {
       </tr>`).join("");
   }
 
-  if (log.ok) {
-    const tbody = document.getElementById("adm-ocr-log");
-    if (log.log.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" class="muted">${t("אין רשומות")}</td></tr>`;
-    } else {
-      tbody.innerHTML = log.log.map(r => `
-        <tr>
-          <td>${r.created_at}</td>
-          <td>${r.user_id}</td>
-          <td><a href="/uploads/${r.image_path}" target="_blank">${r.image_path}</a></td>
-          <td>${r.parsed_ok ? `<span class="badge ok">${t("הצליח")}</span>` : `<span class="badge late">${t("נכשל")}</span>`}</td>
-          <td>${escapeHtml(t(r.note || ""))}</td>
-        </tr>`).join("");
-    }
-  }
 }
 load();
