@@ -5,7 +5,7 @@
 <main class="page">
   <div class="page-head">
     <h1>{{ t("פאנל מנהל") }}</h1>
-    <p class="muted">{{ t("סטטיסטיקות מערכת ולוג סריקות") }}</p>
+    <p class="muted">{{ {'ar': 'إحصائيات النظام', 'he': 'סטטיסטיקות מערכת', 'en': 'System statistics'}.get(locale, 'System statistics') }}</p>
   </div>
 
   <p><a class="btn primary" href="{{ url_for('admin_feedback_page') }}">{{ t('User feedback') }}</a></p>
@@ -48,29 +48,17 @@
       <table class="table">
         <thead>
           <tr>
-            <th>{{ t("ת.ז") }}</th><th>{{ t("שם") }}</th><th>{{ t("אימייל") }}</th><th>{{ t("חשבונות") }}</th><th>{{ t("נרשם") }}</th><th>{{ t("מנהל") }}</th>
+            <th>{{ t("שם") }}</th><th>{{ t("אימייל") }}</th><th>{{ t("חשבונות") }}</th><th>{{ t("נרשם") }}</th><th>{{ t("מנהל") }}</th>
           </tr>
         </thead>
-        <tbody id="adm-users-tbl"><tr><td colspan="6" class="muted">{{ t("טוען...") }}</td></tr></tbody>
+        <tbody id="adm-users-tbl"><tr><td colspan="5" class="muted">{{ t("טוען...") }}</td></tr></tbody>
       </table>
     </div>
   </section>
 
-  <section class="card">
-    <h2>{{ t("לוג סריקות OCR") }}</h2>
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>{{ t("זמן") }}</th><th>{{ t("משתמש") }}</th><th>{{ t("תמונה") }}</th><th>{{ t("סטטוס") }}</th><th>{{ t("הערה") }}</th>
-          </tr>
-        </thead>
-        <tbody id="adm-ocr-log"><tr><td colspan="5" class="muted">{{ t("טוען...") }}</td></tr></tbody>
-      </table>
-    </div>
-  </section>
+
 </main>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/admin.js', v='admincounts2') }}"></script>
+<script src="{{ url_for('static', filename='js/admin.js', v='adminprivacy3') }}"></script>
 {% endblock %}
